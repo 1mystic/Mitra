@@ -64,7 +64,7 @@ Mitra is a standalone backend system with a REST + SSE API. It integrates with:
 - **Neon** (managed PostgreSQL + pgvector)
 - **Anthropic API** (Claude Sonnet 4.6)
 - **HuggingFace Hub** (sentence-transformers model download)
-- **Railway** (backend deployment)
+- **Fly.io** (backend deployment — no sleep, free tier, Docker-based)
 - **Vercel** (frontend deployment, Phase 2)
 
 ### 2.2 User Classes
@@ -648,7 +648,7 @@ After training, the fine-tuned adapter can be:
 ### Phase 4 — Production
 
 - [ ] JWT-based authentication
-- [ ] Railway deployment with GitHub Actions CI/CD
+- [ ] Fly.io deployment with GitHub Actions CI/CD
 - [ ] GitHub profile analysis (extract skills from public repos)
 - [ ] LangSmith observability
 - [ ] Deadline reminder cron jobs

@@ -5,7 +5,7 @@ pydantic-settings==2.6.0
 
 # Database
 sqlalchemy==2.0.36
-psycopg[asyncio]==3.2.3
+psycopg[binary]==3.2.3
 pgvector==0.3.6
 
 # AI / LLM

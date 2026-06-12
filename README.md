@@ -215,11 +215,53 @@ mitra/
 
 ## Deployment
 
-### Backend → Railway
+### Backend → Fly.io (recommended — no sleep, persistent, free)
+
 ```bash
-# In backend/
-# Set env vars in Railway dashboard
-railway up
+# Install flyctl
+curl -L https://fly.io/install.sh | sh
+
+cd backend
+
+# Create fly.toml (first time only)
+fly launch --no-deploy
+
+# Set secrets
+fly secrets set ANTHROPIC_API_KEY=sk-ant-...
+fly secrets set DATABASE_URL=postgresql+psycopg://...
+
+# Deploy
+fly deploy
+```
+
+`fly.toml` config (create in `backend/`):
+```toml
+app = "mitra-backend"
+primary_region = "sin"   # Singapore — closest to India
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = false   # no sleep
+  min_machines_running = 1
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+```
+
+`Dockerfile` (create in `backend/`):
+```dockerfile
+FROM python:3.12-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
 ### Frontend → Vercel (Next.js, Phase 2)
