@@ -1,0 +1,19 @@
+# Fine-tuning pipeline for Mitra's Skill Gap Classifier
+# Requires CUDA GPU (or Google Colab T4+)
+
+anthropic==0.40.0
+datasets==2.19.0
+transformers==4.40.0
+peft==0.11.0
+trl==0.8.6
+torch==2.2.0
+accelerate==0.30.0
+bitsandbytes==0.43.1
+
+# Optional: Unsloth for 2x faster QLoRA fine-tuning
+# pip install unsloth  (install separately — has custom CUDA setup)
+
+scikit-learn==1.4.0
+pandas==2.2.0
+tqdm==4.66.0
+python-dotenv==1.0.0
