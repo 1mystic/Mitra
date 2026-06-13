@@ -31,19 +31,22 @@ export default function Nav() {
   return (
     <nav className={`${styles.nav} ${isLanding ? styles.navTransparent : styles.navSolid}`}>
       <Link href="/" className={styles.brand}>
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-          <polygon
-            points="11,1 20.5,6 20.5,16 11,21 1.5,16 1.5,6"
-            stroke="currentColor" strokeWidth="1.5"
-            fill="rgba(255,255,255,0.06)"
-          />
-          <polygon
-            points="11,5.5 17,9 17,13 11,16.5 5,13 5,9"
-            stroke="currentColor" strokeWidth="1"
-            fill="none" strokeOpacity="0.4"
-          />
-        </svg>
+        <div className={styles.brandMark}>
+          <svg width="15" height="15" viewBox="0 0 22 22" fill="none">
+            <polygon
+              points="11,1 20.5,6 20.5,16 11,21 1.5,16 1.5,6"
+              stroke="#050507" strokeWidth="1.8"
+              fill="transparent"
+            />
+            <polygon
+              points="11,5.5 17,9 17,13 11,16.5 5,13 5,9"
+              stroke="#050507" strokeWidth="1.2"
+              fill="none" strokeOpacity="0.5"
+            />
+          </svg>
+        </div>
         <span className={styles.brandName}>Mitra</span>
+        <span className={styles.brandTag}>AI</span>
       </Link>
 
       <div className={styles.links}>
@@ -59,22 +62,8 @@ export default function Nav() {
       </div>
 
       <div className={styles.right}>
-        <span className={styles.statusDot} aria-hidden />
-        <span className={styles.statusLabel}>AI Online</span>
         {authed && (
-          <button
-            onClick={handleLogout}
-            style={{
-              marginLeft: '12px',
-              background: 'none',
-              border: '1px solid var(--line-strong)',
-              borderRadius: 'var(--r-pill)',
-              color: 'var(--text-2)',
-              fontSize: '12px',
-              padding: '4px 12px',
-              cursor: 'pointer',
-            }}
-          >
+          <button onClick={handleLogout} className={styles.signOutBtn}>
             Sign out
           </button>
         )}

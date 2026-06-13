@@ -1,6 +1,6 @@
 .nav {
   position: fixed;
-  top: 0;
+  top: 6px;
   left: 0;
   right: 0;
   height: var(--nav-h);
@@ -9,103 +9,133 @@
   align-items: center;
   padding: 0 32px;
   gap: 32px;
-  transition: background var(--t-slow), border-color var(--t-slow);
-}
-
-.navTransparent {
   background: transparent;
-  border-bottom: 1px solid transparent;
+  border-bottom: none;
 }
 
+/* Landing page: scroll with the page (not fixed) */
+.navTransparent {
+  position: absolute;
+}
+
+/* Inner pages: stay fixed */
 .navSolid {
-  background: rgba(0,0,0,0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--line);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.4);
+  position: fixed;
 }
 
 /* Brand */
 .brand {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
   color: var(--text-1);
   flex-shrink: 0;
   text-decoration: none;
+  transition: opacity var(--t);
 }
-.brand:hover { opacity: 0.85; }
+.brand:hover { opacity: 0.8; }
+
+.brandMark {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #AFC7E8, #A8D5C2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(175,199,232,0.25);
+}
 
 .brandName {
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-family: var(--font-head);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--text-1);
 }
 
-/* Links */
+.brandTag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: var(--r-pill);
+  background: rgba(175,199,232,0.10);
+  color: var(--sky);
+  border: 1px solid rgba(175,199,232,0.20);
+}
+
+/* Links — segmented pill container */
 .links {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   flex: 1;
   justify-content: center;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--r-pill);
+  padding: 4px;
+  width: fit-content;
+  max-width: fit-content;
+  margin: 0 auto;
 }
 
 .link {
-  padding: 7px 14px;
+  padding: 6px 16px;
   border-radius: var(--r-pill);
-  font-size: 14px;
-  font-weight: 400;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--text-2);
   text-decoration: none;
-  transition: all var(--t);
+  transition: color var(--t), background var(--t);
   white-space: nowrap;
 }
 .link:hover {
   color: var(--text-1);
-  background: var(--bg-active);
-  text-decoration: none;
+  background: rgba(255,255,255,0.06);
 }
 .active {
-  color: #AFC7E8;
-  background: rgba(175,199,232,0.10);
-  box-shadow: 0 0 0 1px rgba(175,199,232,0.18);
-  font-weight: 500;
+  color: var(--sky);
+  background: rgba(175,199,232,0.12);
+  box-shadow: 0 0 0 1px rgba(175,199,232,0.18), 0 2px 8px rgba(0,0,0,0.3);
+  font-weight: 600;
 }
 
 /* Right side */
 .right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-shrink: 0;
+  min-width: 0;
 }
 
-.statusDot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #22c55e;
-  animation: glow 2.5s ease infinite;
-}
-
-@keyframes glow {
-  0%,100% { box-shadow: 0 0 5px #22c55e; opacity:1; }
-  50%      { box-shadow: none; opacity:0.5; }
-}
-
-.statusLabel {
+.signOutBtn {
+  background: none;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-pill);
+  color: var(--text-2);
   font-size: 12px;
-  color: var(--text-3);
-  white-space: nowrap;
+  font-family: var(--font);
+  padding: 5px 14px;
+  cursor: pointer;
+  transition: all var(--t);
+}
+.signOutBtn:hover {
+  background: var(--bg-active);
+  color: var(--text-1);
 }
 
 /* Mobile */
-@media (max-width: 600px) {
-  .nav { padding: 0 16px; gap: 16px; }
-  .links { gap: 2px; }
-  .link { padding: 6px 10px; font-size: 13px; }
+@media (max-width: 640px) {
+  .nav { padding: 0 16px; gap: 12px; }
+  .links { gap: 1px; }
+  .link { padding: 6px 10px; font-size: 12px; }
   .statusLabel { display: none; }
   .brandName { font-size: 15px; }
+  .brandTag { display: none; }
 }

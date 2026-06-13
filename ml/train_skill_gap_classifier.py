@@ -32,13 +32,16 @@ from trl import SFTTrainer
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
-MODEL_ID   = "Qwen/Qwen2.5-3B-Instruct"
-DATA_PATH  = Path(__file__).parent / "data" / "training_pairs.jsonl"
-OUTPUT_DIR = Path(__file__).parent / "checkpoints" / "intent-classifier"
+MODEL_ID = "Qwen/Qwen2.5-3B-Instruct"
 
-# When running on Colab, override these paths:
-# DATA_PATH  = Path("/content/training_pairs.jsonl")
-# OUTPUT_DIR = Path("/content/mitra-intent-classifier")
+# __file__ is undefined in Colab cells — fall back to /content/ paths
+try:
+    _here = Path(__file__).parent
+    DATA_PATH  = _here / "data" / "training_pairs.jsonl"
+    OUTPUT_DIR = _here / "checkpoints" / "intent-classifier"
+except NameError:
+    DATA_PATH  = Path("/content/training_pairs.jsonl")
+    OUTPUT_DIR = Path("/content/mitra-intent-classifier")
 
 INTENTS = ["opportunities", "resume", "gaps", "roadmap", "track", "interview", "general"]
 

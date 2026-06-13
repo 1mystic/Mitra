@@ -123,6 +123,7 @@ class RoadmapRead(BaseModel):
 # ── Application Tracker ───────────────────────────────────────────────────────
 
 class ApplicationCreate(BaseModel):
+    user_id: str
     company: str
     role: str
     status: str = "applied"

@@ -1,0 +1,113 @@
+.footer {
+  width: 100%;
+  align-self: stretch;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  background: var(--bg-surface);
+  padding: 52px 0 28px;
+}
+
+.inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 32px 36px;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 64px;
+  align-items: start;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Brand block */
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.brandMark {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, #AFC7E8, #A8D5C2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.brandName {
+  font-family: var(--font-head);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -0.02em;
+  margin-top: 4px;
+}
+
+.brandDesc {
+  font-size: 13px;
+  color: var(--text-3);
+  line-height: 1.55;
+  max-width: 220px;
+}
+
+/* Link groups */
+.linkGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.groupLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  margin-bottom: 4px;
+}
+
+.link {
+  font-size: 13px;
+  color: var(--text-2);
+  text-decoration: none;
+  transition: color var(--t);
+  line-height: 1;
+}
+.link:hover { color: var(--text-1); }
+
+/* Bottom bar */
+.bottom {
+  max-width: 900px;
+  margin: 20px auto 0;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.copy {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.stack {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: 0.03em;
+}
+
+@media (max-width: 720px) {
+  .footer { padding: 36px 0 20px; }
+  .inner { grid-template-columns: 1fr 1fr; gap: 32px; }
+  .brand { grid-column: span 2; }
+  .bottom { flex-direction: column; align-items: flex-start; gap: 6px; }
+}
+@media (max-width: 480px) {
+  .inner { grid-template-columns: 1fr; }
+  .brand { grid-column: span 1; }
+}

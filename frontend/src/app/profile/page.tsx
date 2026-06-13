@@ -184,7 +184,7 @@ export default function ProfilePage() {
           {loading
             ? <div className={styles.loadingCenter}><span className="spinner" /></div>
             : skills.length === 0
-              ? <div className={styles.emptySkills}>No skills detected yet — upload a resume to get started.</div>
+              ? <div className={styles.emptySkills}>No skills detected yet. Upload a resume to get started.</div>
               : (
                 <div className={styles.categoryList}>
                   {Object.entries(SKILL_CATEGORIES).map(([cat, catSkills]) => {

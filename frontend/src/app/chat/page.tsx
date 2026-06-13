@@ -70,7 +70,7 @@ const ACTIONS = [
       </svg>
     ),
     title: 'Prep for interview',
-    prompt: 'Help me prepare for a Google ML intern interview — system design and ML fundamentals',
+    prompt: 'Help me prepare for a Google ML intern interview: system design and ML fundamentals',
   },
 ];
 

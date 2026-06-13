@@ -12,9 +12,28 @@
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
 }
-.title { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
-.subtitle { font-size: 14px; color: var(--text-2); margin-top: 4px; }
+
+.title {
+  font-family: var(--font-head);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  background: linear-gradient(135deg, #F7F9FC, #D8E1F2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 4px;
+  letter-spacing: 0.04em;
+}
 
 .errMsg {
   padding: 12px 16px;
@@ -38,32 +57,33 @@
 .kanban {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 14px;
+  gap: 12px;
   align-items: start;
 }
 
 .column {
-  background: var(--bg-card);
-  border: 1px solid var(--line);
+  background: var(--bg-surface);
+  border: 1px solid rgba(255,255,255,0.07);
   border-radius: var(--r-xl);
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 14px 12px;
-  min-height: 280px;
+  min-height: 300px;
   position: relative;
   overflow: hidden;
   transition: border-color var(--t);
 }
-.column:hover { border-color: var(--line-strong); }
-/* Thin colour stripe at the top of each column — set via inline --col-accent */
+.column:hover { border-color: rgba(255,255,255,0.12); }
+
+/* Thin colour stripe at the top */
 .column::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 2px;
   background: var(--col-accent, transparent);
-  opacity: 0.7;
+  opacity: 0.6;
 }
 
 .colHead {
@@ -71,45 +91,49 @@
   align-items: center;
   gap: 8px;
   padding-bottom: 10px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
   margin-bottom: 2px;
 }
 
 .colDot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
 .colLabel {
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   font-weight: 500;
   color: var(--text-2);
   flex: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .colCount {
-  font-size: 11px;
+  font-family: var(--font-mono);
+  font-size: 10px;
   color: var(--text-3);
-  background: rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.04);
   border: 1px solid var(--line);
-  padding: 1px 7px;
+  padding: 1px 8px;
   border-radius: var(--r-pill);
 }
 
 .emptyCol {
   text-align: center;
-  padding: 24px 0;
+  padding: 28px 0;
   color: var(--text-3);
-  font-size: 18px;
+  font-size: 20px;
   user-select: none;
 }
 
 /* App card */
 .appCard {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.06);
   border-radius: var(--r-lg);
   padding: 14px;
   display: flex;
@@ -117,7 +141,10 @@
   gap: 10px;
   transition: all var(--t);
 }
-.appCard:hover { background: rgba(255,255,255,0.055); border-color: var(--line-strong); }
+.appCard:hover {
+  background: rgba(255,255,255,0.045);
+  border-color: rgba(255,255,255,0.11);
+}
 
 .appTop {
   display: flex;
@@ -127,26 +154,29 @@
 }
 
 .appCompany {
-  font-size: 11px;
+  font-family: var(--font-mono);
+  font-size: 10px;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--sky);
   line-height: 1.2;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
 }
+
 .appRole {
   font-size: 13px;
   font-weight: 500;
   color: var(--text-1);
   line-height: 1.4;
   margin-top: 2px;
+  font-family: var(--font-head);
 }
 
 .appNotes {
   font-size: 11px;
   color: var(--text-2);
   line-height: 1.5;
-  border-left: 2px solid var(--line-strong);
+  border-left: 2px solid rgba(175,199,232,0.18);
   padding-left: 8px;
 }
 
@@ -156,7 +186,11 @@
   justify-content: space-between;
 }
 
-.appDate { font-size: 10px; color: var(--text-3); }
+.appDate {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-3);
+}
 
 /* Menu */
 .appActions { position: relative; }
@@ -169,7 +203,6 @@
   justify-content: center;
   border-radius: var(--r-sm);
   color: var(--text-3);
-  font-size: 15px;
   cursor: pointer;
   transition: all var(--t);
   flex-shrink: 0;
@@ -181,21 +214,22 @@
   top: 100%;
   right: 0;
   z-index: 100;
-  background: #1a1a1a;
+  background: var(--bg-elevated);
   border: 1px solid var(--line-strong);
   border-radius: var(--r-lg);
   padding: 6px;
-  min-width: 148px;
-  box-shadow: var(--shadow-elevated);
+  min-width: 152px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06);
   display: flex;
   flex-direction: column;
   gap: 1px;
 }
 
 .menuSub {
-  font-size: 10px;
+  font-family: var(--font-mono);
+  font-size: 9px;
   color: var(--text-3);
-  letter-spacing: 0.07em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   padding: 4px 8px 2px;
 }
@@ -210,6 +244,7 @@
   transition: all var(--t);
   display: block;
   width: 100%;
+  font-family: var(--font);
 }
 .menuItem:hover { background: var(--bg-active); color: var(--text-1); }
 .menuDelete { color: var(--red); }
@@ -222,8 +257,8 @@
   position: fixed;
   inset: 0;
   z-index: 500;
-  background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(6px);
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -233,16 +268,28 @@
 .modal {
   width: 100%;
   max-width: 500px;
-  padding: 32px;
+  padding: 36px;
+  background: var(--bg-surface);
+  border: 1px solid rgba(175,199,232,0.14);
+  border-radius: var(--r-2xl);
+  box-shadow: 0 12px 48px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06);
+  animation: fadeUp 0.25s ease both;
 }
 
 .modalHead {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
-.modalTitle { font-size: 18px; font-weight: 700; color: var(--text-1); letter-spacing: -0.01em; }
+
+.modalTitle {
+  font-family: var(--font-head);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -0.015em;
+}
 
 .closeBtn {
   width: 32px;
@@ -252,7 +299,6 @@
   align-items: center;
   justify-content: center;
   color: var(--text-3);
-  font-size: 20px;
   cursor: pointer;
   transition: all var(--t);
 }
@@ -261,16 +307,27 @@
 .addForm { display: flex; flex-direction: column; gap: 16px; }
 .formRow { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .field { display: flex; flex-direction: column; gap: 7px; }
-.fieldLabel { font-size: 13px; font-weight: 500; color: var(--text-2); }
+.fieldLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-3);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
 .formActions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
 
-/* Status badge colors */
+/* Status badge colors — kinetic palette */
 .statusWishlist     { background: rgba(255,255,255,0.05); color: #8891a4;  border: 1px solid rgba(255,255,255,0.08); }
 .statusApplied      { background: rgba(175,199,232,0.12); color: #AFC7E8;  border: 1px solid rgba(175,199,232,0.25); }
 .statusInterviewing { background: rgba(245,158,11,0.12);  color: #f59e0b;  border: 1px solid rgba(245,158,11,0.25); }
-.statusOffer        { background: rgba(168,213,194,0.14);  color: #A8D5C2;  border: 1px solid rgba(168,213,194,0.28); }
+.statusOffer        { background: rgba(168,213,194,0.14); color: #A8D5C2;  border: 1px solid rgba(168,213,194,0.28); }
 .statusRejected     { background: rgba(239,68,68,0.12);   color: #f87171;  border: 1px solid rgba(239,68,68,0.25); }
 
 @media (max-width: 1100px) { .kanban { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 720px)  { .kanban { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 500px)  { .kanban { grid-template-columns: 1fr; } .formRow { grid-template-columns: 1fr; } .page { padding: 24px 16px; } }
+@media (max-width: 500px)  {
+  .kanban { grid-template-columns: 1fr; }
+  .formRow { grid-template-columns: 1fr; }
+  .page { padding: 24px 16px; }
+}

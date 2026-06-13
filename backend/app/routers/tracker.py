@@ -19,10 +19,10 @@ async def list_applications(user_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("", response_model=ApplicationRead, status_code=201)
-async def create_application(body: ApplicationCreate, user_id: str, db: AsyncSession = Depends(get_db)):
+async def create_application(body: ApplicationCreate, db: AsyncSession = Depends(get_db)):
     if body.status not in VALID_STATUSES:
         raise HTTPException(status_code=422, detail=f"status must be one of {VALID_STATUSES}")
-    app = Application(user_id=user_id, **body.model_dump())
+    app = Application(**body.model_dump())
     db.add(app)
     await db.commit()
     await db.refresh(app)

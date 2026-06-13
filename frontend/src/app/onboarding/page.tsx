@@ -20,9 +20,9 @@ const STAGES = [
 const STAGE_DELAYS = [1200, 2500];
 
 const TIPS = [
-  'Mitra uses pgvector cosine similarity to match you to internships semantically — not just keyword search.',
+  'Mitra uses pgvector cosine similarity to match you to internships semantically, not just keyword search.',
   'Your resume is split into overlapping chunks so Mitra can recall specific sections mid-conversation.',
-  'Skill matching uses a 80+ term taxonomy with fuzzy matching — so "pytorch" and "PyTorch" are the same.',
+  'Skill matching uses a 80+ term taxonomy with fuzzy matching, so "pytorch" and "PyTorch" are treated the same.',
   'The more detailed your resume, the better Mitra can identify skill gaps vs. specific job requirements.',
   'Once set up, Mitra remembers every conversation and builds context across sessions.',
 ];
@@ -150,7 +150,7 @@ export default function OnboardingPage() {
           <>
             <h1 className={styles.title}>Analysing your resume…</h1>
             <p className={styles.sub}>
-              Building your semantic profile — usually under 20 seconds.
+              Building your semantic profile. Usually under 20 seconds.
               <span className={styles.elapsed}> {elapsed}s</span>
             </p>
             <div className={styles.stages}>
