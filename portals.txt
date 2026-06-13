@@ -1,0 +1,295 @@
+For a **unified internship aggregation platform**, don't think in terms of "top portals". Think in terms of **data source categories**.
+
+A practical 2026 architecture would have ~25–40 sources.
+
+# Tier A — Core Sources (80% of internship volume)
+
+These should be your first integrations.
+
+| Source         | Type                      | Priority |
+| -------------- | ------------------------- | -------- |
+| Internshala    | Internship-only           | P0       |
+| Unstop         | Internship + competitions | P0       |
+| LinkedIn Jobs  | Jobs + internships        | P0       |
+| Naukri         | Jobs + internships        | P0       |
+| Foundit        | Jobs + internships        | P0       |
+| Wellfound      | Startup internships       | P0       |
+| Apna           | Jobs + internships        | P1       |
+| Indeed India   | Jobs + internships        | P1       |
+| Glassdoor Jobs | Jobs + internships        | P1       |
+
+Internshala, Unstop, AICTE, LinkedIn, Naukri, Foundit, Wellfound collectively cover most mainstream internship postings in India. ([Unstop][1])
+
+---
+
+# Tier B — Government Sources
+
+These provide high-quality verified opportunities.
+
+| Source                           | Type                              |
+| -------------------------------- | --------------------------------- |
+| AICTE National Internship Portal | Central internship hub            |
+| Skill India Internship Portal    | Government-backed                 |
+| PM Internship Scheme             | Large-scale corporate internships |
+| National Career Service (NCS)    | Government jobs/internships       |
+| Digital India Internship         |                                   |
+| MOSPI Internship                 |                                   |
+| MEA Internship                   |                                   |
+| NABARD Internship                |                                   |
+| NHRC Internship                  |                                   |
+| NCST Internship                  |                                   |
+
+AICTE and Skill India have become major internship ecosystems with very large inventories. ([AICTE Internship Portal][2])
+
+---
+
+# Tier C — Startup Ecosystem Sources
+
+Often ignored by aggregators.
+
+| Source                   |
+| ------------------------ |
+| Wellfound                |
+| Y Combinator Jobs        |
+| Startup India            |
+| AngelList Startup Boards |
+| Cuvette                  |
+| Hirist                   |
+| Cutshort                 |
+| Hasjob                   |
+| Instahyre                |
+
+These are extremely useful for:
+
+* software engineering
+* AI/ML
+* product management
+* startup internships
+
+---
+
+# Tier D — University Sources
+
+Build dedicated crawlers.
+
+### IITs
+
+```text
+IIT Bombay
+IIT Delhi
+IIT Madras
+IIT Kanpur
+IIT Kharagpur
+IIT Roorkee
+IIT Hyderabad
+IIT Gandhinagar
+```
+
+### IISc
+
+```text
+IISc Bangalore
+```
+
+### IISERs
+
+```text
+All IISER campuses
+```
+
+### IIITs
+
+```text
+IIIT Hyderabad
+IIIT Bangalore
+IIIT Delhi
+```
+
+### NITs
+
+Top 20 NITs
+
+Many research internships never appear on Internshala or LinkedIn.
+
+---
+
+# Tier E — Research Labs
+
+These are highly valuable.
+
+```text
+DRDO
+ISRO
+BARC
+CSIR Labs
+CDAC
+ICAR
+ICMR
+NPL
+NAL
+SAMEER
+```
+
+Most aggregators miss these entirely.
+
+---
+
+# Tier F — Company Career Pages
+
+Create direct crawlers.
+
+Target:
+
+```text
+Google
+Microsoft
+Amazon
+NVIDIA
+Adobe
+Salesforce
+Atlassian
+Uber
+Flipkart
+Meesho
+Razorpay
+PhonePe
+Zoho
+Freshworks
+Swiggy
+Zomato
+```
+
+Many internships appear here days or weeks before job portals.
+
+---
+
+# Tier G — Emerging / Underscraped Sources
+
+Useful for discovering new opportunities.
+
+| Source                   |
+| ------------------------ |
+| ApplyNest                |
+| InternshipWala           |
+| Thiranex                 |
+| LetsIntern (if active)   |
+| Twenty19 (if active)     |
+| Youth4Work               |
+| Freshersworld            |
+| CollegeDunia internships |
+| Shiksha internships      |
+
+Some are smaller but produce unique listings. ([Internship Wala][3])
+
+---
+
+# Tier H — Community Sources
+
+Very high signal for tech internships.
+
+### GitHub
+
+Search:
+
+```text
+internship
+summer internship
+research internship
+student program
+GSoC
+```
+
+### Discord Communities
+
+```text
+MLH
+Google DSC
+GDG
+OSS Communities
+```
+
+### Reddit
+
+```text
+r/developersIndia
+r/Indian_Academia
+r/cscareerquestionsIN
+```
+
+### Telegram
+
+```text
+Internship channels
+Placement channels
+Tech hiring channels
+```
+
+---
+
+# Recommended MVP (First 10 Sources)
+
+If you're building this project yourself:
+
+```text
+1. Internshala
+2. Unstop
+3. AICTE
+4. Skill India
+5. LinkedIn
+6. Wellfound
+7. Naukri
+8. Foundit
+9. Cutshort
+10. Startup India
+```
+
+This alone can realistically give **50k–150k active internship listings** after deduplication. ([Unstop][1])
+
+# Ideal Architecture
+
+```text
+Collectors
+│
+├── Portal Scrapers
+├── Government APIs
+├── Career Page Crawlers
+├── RSS Feed Collectors
+├── Sitemap Crawlers
+└── Community Feed Parsers
+
+        ↓
+
+Raw Queue (Kafka)
+
+        ↓
+
+Normalizer
+
+        ↓
+
+Deduplication
+(company + title + embedding)
+
+        ↓
+
+PostgreSQL
+
+        ↓
+
+Search Index
+(Elasticsearch/OpenSearch)
+
+        ↓
+
+FastAPI
+
+        ↓
+
+Next.js Frontend
+```
+
+For long-term maintenance, I would prioritize **career-page crawling + AICTE + Unstop + Internshala** over trying to scrape everything. Those four sources provide the highest signal-to-maintenance ratio in India as of 2026. ([AICTE Internship Portal][2])
+
+[1]: https://unstop.com/internship?utm_source=chatgpt.com "Paid, work from home & summer internships for students ..."
+[2]: https://internship.aicte-india.org/?utm_source=chatgpt.com "AICTE Internship Portal - National Internship Portal for ..."
+[3]: https://www.internshipwala.com/?utm_source=chatgpt.com "Best Internship Website in India | Online Training | Work ..."

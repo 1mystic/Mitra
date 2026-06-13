@@ -23,7 +23,7 @@ from langchain_core.messages import AIMessage
 from langgraph.graph import END, START, StateGraph
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..services import llm_client, memory_service
+from ..services import llm_client, memory_service, resume_service
 from .application_tracker import application_tracker_node
 from .gap_detector import gap_detector_node
 from .interview_coach import interview_coach_node
@@ -46,11 +46,12 @@ def _bind_db(fn: Callable, db: AsyncSession) -> Callable:
 # ── Core nodes ────────────────────────────────────────────────────────────────
 
 async def memory_retriever_node(state: AgentState, db: AsyncSession) -> dict:
-    """Retrieve semantically relevant memories before routing."""
+    """Retrieve relevant episodic memories and resume chunks before routing."""
     user_id = state["user_id"]
     query = state["messages"][-1].content
-    memories = await memory_service.retrieve(db, user_id, query, limit=5)
-    return {"memory_context": [m.content for m in memories]}
+    memory_context = await memory_service.retrieve(db, user_id, query, limit=5)
+    resume_context = await resume_service.retrieve_chunks(db, user_id, query, limit=4)
+    return {"memory_context": memory_context, "resume_context": resume_context}
 
 
 async def intent_router_node(state: AgentState) -> dict:
@@ -62,6 +63,14 @@ async def intent_router_node(state: AgentState) -> dict:
 
 def route_intent(state: AgentState) -> str:
     return state.get("intent", "general")
+
+
+async def memory_writer_node(state: AgentState, db: AsyncSession) -> dict:
+    """Persist the completed conversation turn as an episodic memory episode."""
+    user_id = state["user_id"]
+    content, episode_type, importance = memory_service.build_episode(state)
+    await memory_service.store(db, user_id, content, episode_type=episode_type, importance=importance)
+    return {}
 
 
 async def responder_node(state: AgentState) -> dict:
@@ -81,6 +90,10 @@ async def responder_node(state: AgentState) -> dict:
 
     if memory_ctx:
         ctx_parts.append("Relevant memory:\n" + "\n".join(f"- {m}" for m in memory_ctx))
+
+    resume_ctx = state.get("resume_context", [])
+    if resume_ctx:
+        ctx_parts.append("Relevant resume excerpts:\n" + "\n".join(f"- {c}" for c in resume_ctx))
 
     profile = state.get("user_profile")
     if profile:
@@ -149,6 +162,7 @@ def build_graph(db: AsyncSession) -> "CompiledGraph":
     builder.add_node("application_tracker", _bind_db(application_tracker_node, db))
     builder.add_node("interview_coach",     _bind_db(interview_coach_node, db))
     builder.add_node("responder",           responder_node)
+    builder.add_node("memory_writer",       _bind_db(memory_writer_node, db))
 
     # Entry
     builder.add_edge(START, "memory_retriever")
@@ -176,6 +190,7 @@ def build_graph(db: AsyncSession) -> "CompiledGraph":
     builder.add_edge("resume_analyzer",     "responder")
     builder.add_edge("application_tracker", "responder")
     builder.add_edge("interview_coach",     "responder")
-    builder.add_edge("responder",           END)
+    builder.add_edge("responder",           "memory_writer")
+    builder.add_edge("memory_writer",       END)
 
     return builder.compile()

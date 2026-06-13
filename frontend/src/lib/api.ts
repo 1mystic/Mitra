@@ -3,13 +3,20 @@ import type {
   Opportunity, OpportunityCreate, SearchRequest,
   Application, ApplicationCreate, ApplicationUpdate,
   ChatRequest, ChatResponse, SSEEvent,
+  RegisterRequest, LoginRequest, TokenResponse,
+  ProfileUploadResponse,
 } from './types';
+import { getAuthHeader } from './auth';
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeader(),
+      ...init?.headers,
+    },
     ...init,
   });
   if (!res.ok) {
@@ -38,16 +45,21 @@ export const profile = {
   get: (userId: string) =>
     request<SkillProfile>(`/api/profile/${userId}`),
 
-  upload: async (userId: string, file: File): Promise<SkillProfile> => {
+  upload: async (userId: string, file: File): Promise<ProfileUploadResponse> => {
     const fd = new FormData();
     fd.append('user_id', userId);
     fd.append('file', file);
-    const res = await fetch(`${BASE}/api/profile/upload`, { method: 'POST', body: fd });
+    // Note: no Content-Type header — browser sets multipart boundary. Auth header still applied.
+    const res = await fetch(`${BASE}/api/profile/upload`, {
+      method: 'POST',
+      headers: { ...getAuthHeader() },
+      body: fd,
+    });
     if (!res.ok) {
       const body = await res.text().catch(() => '');
       throw new Error(`${res.status} ${res.statusText}: ${body}`);
     }
-    return res.json() as Promise<SkillProfile>;
+    return res.json() as Promise<ProfileUploadResponse>;
   },
 };
 
@@ -80,6 +92,19 @@ export const tracker = {
     request<void>(`/api/tracker/${appId}`, { method: 'DELETE' }),
 };
 
+/* ── Auth ───────────────────────────────────────────────────────────────── */
+
+export const auth = {
+  register: (data: RegisterRequest) =>
+    request<TokenResponse>('/api/auth/register', { method: 'POST', body: JSON.stringify(data) }),
+
+  login: (data: LoginRequest) =>
+    request<TokenResponse>('/api/auth/login', { method: 'POST', body: JSON.stringify(data) }),
+
+  me: () =>
+    request<User>('/api/auth/me'),
+};
+
 /* ── Chat ────────────────────────────────────────────────────────────────── */
 
 export const chat = {
@@ -93,7 +118,7 @@ export const chat = {
       try {
         const res = await fetch(`${BASE}/api/chat/stream`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
           body: JSON.stringify(data),
           signal: controller.signal,
         });

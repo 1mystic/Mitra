@@ -21,6 +21,7 @@ class User(Base):
     id = Column(String, primary_key=True, default=_uuid)
     name = Column(String, nullable=True)
     email = Column(String, unique=True, nullable=True)
+    hashed_password = Column(String, nullable=True)
     goal = Column(String, nullable=True)          # e.g. "ML internships in India"
     target_role = Column(String, nullable=True)   # e.g. "ML Engineer"
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -28,6 +29,7 @@ class User(Base):
     skill_profile = relationship("SkillProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
     applications = relationship("Application", back_populates="user", cascade="all, delete-orphan")
     memory_episodes = relationship("MemoryEpisode", back_populates="user", cascade="all, delete-orphan")
+    resume_chunks = relationship("ResumeChunk", back_populates="user", cascade="all, delete-orphan")
 
 
 class SkillProfile(Base):
@@ -61,6 +63,10 @@ class Opportunity(Base):
     embedding = Column(Vector(384), nullable=True)
     is_active = Column(Boolean, default=True)
     fetched_at = Column(DateTime, default=datetime.utcnow)
+    # Provenance — NULL for manually seeded listings, set for auto-fetched ones.
+    # (source, external_id) pair is the upsert key.
+    source = Column(String, nullable=True)       # "internshala" | "unstop" | "adzuna"
+    external_id = Column(String, nullable=True)  # source-specific stable ID
 
 
 class GapAnalysis(Base):
@@ -104,6 +110,21 @@ class Application(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user = relationship("User", back_populates="applications")
+
+
+class ResumeChunk(Base):
+    """A semantically-chunked piece of a user's resume, embedded for RAG retrieval."""
+    __tablename__ = "resume_chunks"
+
+    id = Column(String, primary_key=True, default=_uuid)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    content = Column(Text, nullable=False)
+    section = Column(String, nullable=True)        # e.g. "Experience", "Projects", "Skills"
+    chunk_index = Column(Integer, default=0)
+    embedding = Column(Vector(384), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="resume_chunks")
 
 
 class MemoryEpisode(Base):

@@ -42,14 +42,21 @@ async def gap_detector_node(state: AgentState, db: AsyncSession) -> dict:
 
     match_score, present, missing = await skill_graph.compute_match(candidate_skills, required_skills)
 
+    resume_ctx = state.get("resume_context", [])
+    resume_block = (
+        "\n\nRelevant resume excerpts:\n" + "\n".join(f"- {c}" for c in resume_ctx[:4])
+        if resume_ctx else ""
+    )
+
     summary_prompt = f"""Summarize this skill gap analysis in 3-4 sentences for a student.
 
 Role context: {context}
 Match score: {match_score * 100:.0f}%
 Present skills: {present}
-Missing skills: {[m['skill'] for m in missing]}
+Missing skills: {[m['skill'] for m in missing]}{resume_block}
 
-Be encouraging but honest. Focus on the most impactful gaps to close."""
+Be encouraging but honest. Reference their actual experience where relevant.
+Focus on the most impactful gaps to close."""
 
     from ..services import llm_client
     summary = await llm_client.complete(summary_prompt, max_tokens=300)

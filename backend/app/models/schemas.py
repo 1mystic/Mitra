@@ -44,6 +44,11 @@ class SkillProfileRead(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class ProfileUploadResponse(SkillProfileRead):
+    """Returned by POST /api/profile/upload — adds chunking metadata."""
+    chunk_count: int = 0
+
+
 # ── Opportunities ─────────────────────────────────────────────────────────────
 
 class OpportunityRead(BaseModel):
@@ -147,6 +152,26 @@ class ApplicationRead(BaseModel):
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+# ── Auth ──────────────────────────────────────────────────────────────────────
+
+class RegisterRequest(BaseModel):
+    name: str
+    email: str
+    password: str
+    goal: Optional[str] = None
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: "UserRead"
 
 
 # ── Chat ──────────────────────────────────────────────────────────────────────

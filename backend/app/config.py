@@ -14,6 +14,14 @@ class Settings(BaseSettings):
     embedding_model: str = "all-MiniLM-L6-v2"
     embedding_dim: int = 384
 
+    jwt_secret_key: str = "mitra-dev-secret-change-in-production-use-32-chars"
+    jwt_algorithm: str = "HS256"
+    jwt_expire_days: int = 30
+
+    # Adzuna Jobs API — free tier at developer.adzuna.com
+    adzuna_app_id: str = ""
+    adzuna_app_key: str = ""
+
     @property
     def async_database_url(self) -> str:
         url = self.database_url

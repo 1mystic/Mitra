@@ -14,13 +14,23 @@ export interface UserCreate {
   goal?: string;
 }
 
+export interface ResumeProject {
+  name: string;
+  description: string;
+  skills?: string[];
+}
+
 export interface SkillProfile {
   id: string;
   user_id: string;
-  raw_skills: string[];
-  embedding_updated_at: string | null;
-  created_at: string;
-  updated_at: string;
+  skills: Record<string, number>;   // { "Python": 0.9, "PyTorch": 0.7 }
+  projects: ResumeProject[];
+  experience_text: string | null;
+  updated_at: string | null;
+}
+
+export interface ProfileUploadResponse extends SkillProfile {
+  chunk_count: number;
 }
 
 export interface MissingSkill {
@@ -120,4 +130,24 @@ export interface SearchRequest {
   query: string;
   user_id?: string;
   limit?: number;
+}
+
+// ── Auth ────────────────────────────────────────────────────────────────────
+
+export interface RegisterRequest {
+  name: string;
+  email: string;
+  password: string;
+  goal?: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface TokenResponse {
+  access_token: string;
+  token_type: string;
+  user: User;
 }

@@ -1,166 +1,175 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { users } from '@/lib/api';
-import type { UserCreate } from '@/lib/types';
+import { isAuthenticated } from '@/lib/auth';
 import styles from './page.module.css';
-
-const GOALS = [
-  'ML research intern at top lab',
-  'SWE intern at product company',
-  'Data science intern (industry)',
-  'AI/NLP research internship',
-  'CV / robotics intern',
-];
 
 export default function LandingPage() {
   const router = useRouter();
-  const [form, setForm] = useState<UserCreate>({ name: '', email: '', goal: '' });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [authed, setAuthed] = useState(false);
 
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault();
-    if (!form.name.trim()) { setError('Name is required'); return; }
-    setLoading(true);
-    setError('');
-    try {
-      const user = await users.create({ ...form, email: form.email || undefined, goal: form.goal || undefined });
-      localStorage.setItem('mitra_user_id', user.id);
-      localStorage.setItem('mitra_user_name', user.name);
-      router.push('/chat');
-    } catch (err) {
-      setError(String(err));
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    setAuthed(isAuthenticated());
+  }, []);
+
+  function goStart() {
+    router.push(authed ? '/chat' : '/auth');
   }
-
-  function handleReturn() {
-    const id = localStorage.getItem('mitra_user_id');
-    if (id) router.push('/chat');
-  }
-
-  const existingUser = typeof window !== 'undefined' && localStorage.getItem('mitra_user_id');
 
   return (
     <div className={styles.page}>
-      {/* Grid backdrop */}
-      <div className={styles.grid} aria-hidden />
+      {/* Spotlight stage light */}
+      <div className={styles.spotlight} aria-hidden />
 
-      <div className={styles.center}>
-        {/* Logo / hero */}
-        <div className={styles.hero}>
-          <div className={styles.hexWrap}>
-            <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
-              <polygon
-                points="36,4 66,20 66,52 36,68 6,52 6,20"
-                stroke="#4f8ef7"
-                strokeWidth="1.5"
-                fill="rgba(79,142,247,0.08)"
-              />
-              <polygon
-                points="36,14 56,25 56,47 36,58 16,47 16,25"
-                stroke="rgba(79,142,247,0.35)"
-                strokeWidth="1"
-                fill="none"
-              />
-              <text x="36" y="41" textAnchor="middle" fill="#4f8ef7" fontSize="18" fontFamily="JetBrains Mono,monospace" fontWeight="500">⬡</text>
-            </svg>
-          </div>
-          <h1 className={styles.title}>mitra</h1>
-          <p className={styles.subtitle}>Career Intelligence OS for ML/AI students</p>
-          <div className={styles.chips}>
-            <span className="badge badge-blue">Multi-Agent AI</span>
-            <span className="badge badge-teal">Skill Gap Analysis</span>
-            <span className="badge badge-muted">pgvector Memory</span>
-          </div>
+      {/* Hero */}
+      <section className={styles.hero}>
+        <div className={styles.heroBadge}>
+          <span className={styles.heroBadgeDot} />
+          Multi-Agent AI for ML/AI Students in India
         </div>
 
-        {/* Form card */}
-        <div className={`${styles.formCard} card`}>
-          <div className={styles.cardHeader}>
-            <span className={styles.cardTitle}>Initialize Session</span>
-            <span className="badge badge-muted mono">new user</span>
-          </div>
+        <h1 className={`${styles.heroTitle} display-1`}>
+          Your Career<br />Intelligence OS
+        </h1>
 
-          <form onSubmit={handleCreate} className={styles.form}>
-            <div className={styles.field}>
-              <label className={styles.label}>Name</label>
-              <input
-                className="input"
-                placeholder="e.g. Arjun Sharma"
-                value={form.name}
-                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                autoFocus
-              />
-            </div>
+        <p className={`${styles.heroSub} body-lg`}>
+          Mitra finds internships, maps skill gaps, builds roadmaps, and preps you for interviews — all through one conversational interface.
+        </p>
 
-            <div className={styles.field}>
-              <label className={styles.label}>Email <span className={styles.optional}>(optional)</span></label>
-              <input
-                className="input"
-                type="email"
-                placeholder="your@email.com"
-                value={form.email ?? ''}
-                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.label}>Primary Goal</label>
-              <div className={styles.goalGrid}>
-                {GOALS.map(g => (
-                  <button
-                    key={g}
-                    type="button"
-                    className={`${styles.goalChip} ${form.goal === g ? styles.goalChipActive : ''}`}
-                    onClick={() => setForm(f => ({ ...f, goal: g }))}
-                  >
-                    {g}
-                  </button>
-                ))}
-              </div>
-              <input
-                className="input"
-                style={{ marginTop: 'var(--s2)' }}
-                placeholder="or type your own goal…"
-                value={form.goal ?? ''}
-                onChange={e => setForm(f => ({ ...f, goal: e.target.value }))}
-              />
-            </div>
-
-            {error && <p className={styles.error}>{error}</p>}
-
-            <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%', justifyContent: 'center', padding: 'var(--s3)' }}>
-              {loading ? <><span className="spinner" style={{width:14,height:14}} />Initializing…</> : '→ Launch Mitra'}
-            </button>
-          </form>
-        </div>
-
-        {existingUser && (
-          <button onClick={handleReturn} className="btn btn-ghost" style={{ marginTop: 'var(--s4)' }}>
-            ↩ Return to existing session
+        <div className={styles.heroActions}>
+          <button className="btn btn-white" onClick={goStart}>
+            {authed ? 'Go to dashboard' : 'Get started free'}
           </button>
-        )}
+          <a href="#get-started" className="btn btn-dark">
+            See how it works
+          </a>
+        </div>
 
-        {/* Feature grid */}
-        <div className={styles.features}>
+        {/* Mini stats */}
+        <div className={styles.stats}>
           {[
-            { icon: '⌬', title: 'Multi-Agent Chat', desc: '6 specialized agents: Opportunity Hunter, Gap Detector, Roadmap Planner, Interview Coach, and more.' },
-            { icon: '◈', title: 'Skill Gap Analysis', desc: 'Upload your resume. Mitra maps your skills against 50+ curated ML/AI internship listings.' },
-            { icon: '▦', title: 'Application Tracker', desc: 'Kanban board to track applications from wishlist to offer. Linked to opportunity metadata.' },
-            { icon: '◎', title: 'Episodic Memory', desc: 'Mitra remembers your goals, past queries, and progress across sessions using pgvector.' },
-          ].map(f => (
-            <div key={f.title} className={`${styles.featureCard} card`}>
-              <span className={styles.featureIcon}>{f.icon}</span>
-              <h3 className={styles.featureTitle}>{f.title}</h3>
-              <p className={styles.featureDesc}>{f.desc}</p>
+            { val: '6', label: 'AI agents' },
+            { val: '50+', label: 'Curated ML/AI listings' },
+            { val: 'pgvector', label: 'Semantic memory' },
+            { val: 'Claude 4', label: 'Powered by' },
+          ].map(s => (
+            <div key={s.label} className={styles.stat}>
+              <span className={styles.statVal}>{s.val}</span>
+              <span className={styles.statLabel}>{s.label}</span>
             </div>
           ))}
         </div>
-      </div>
+      </section>
+
+      {/* Feature section */}
+      <section className={styles.features}>
+        <div className={styles.featuresHead}>
+          <h2 className={`display-2 ${styles.featuresTitle}`}>Everything you need to land an ML internship</h2>
+          <p className="body-md" style={{ maxWidth: 420 }}>
+            Mitra connects your resume, goals, and the job market into one intelligent system that grows with you.
+          </p>
+        </div>
+
+        <div className={styles.featureGrid}>
+          {[
+            {
+              icon: (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+              ),
+              title: 'Opportunity Hunter',
+              desc: 'Semantic search across 50+ curated ML, NLP, CV, and research internships, matched to your skill profile.',
+            },
+            {
+              icon: (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+                </svg>
+              ),
+              title: 'Skill Gap Detector',
+              desc: 'Upload your resume. Mitra maps your skills against job requirements and prioritizes what to learn next.',
+            },
+            {
+              icon: (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M3 3h18v18H3z"/><path d="M3 9h18M9 21V9"/>
+                </svg>
+              ),
+              title: 'Roadmap Planner',
+              desc: 'Get a week-by-week learning plan built around your timeline, current skills, and target role.',
+            },
+            {
+              icon: (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                </svg>
+              ),
+              title: 'Interview Coach',
+              desc: 'Practice ML system design and behavioural questions with a coach that knows your background.',
+            },
+            {
+              icon: (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+                </svg>
+              ),
+              title: 'Application Tracker',
+              desc: 'Kanban board that tracks every application from wishlist to offer, linked to opportunity metadata.',
+            },
+            {
+              icon: (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M12 2a10 10 0 100 20A10 10 0 0012 2z"/><path d="M12 6v6l4 2"/>
+                </svg>
+              ),
+              title: 'Episodic Memory',
+              desc: 'Mitra remembers your goals, past conversations, and skill progress across sessions using pgvector.',
+            },
+          ].map(f => (
+            <div key={f.title} className={`${styles.featureCard} card`}>
+              <div className={styles.featureIconWrap}>
+                {f.icon}
+              </div>
+              <h3 className={styles.featureCardTitle}>{f.title}</h3>
+              <p className={`${styles.featureCardDesc} body-sm`}>{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section id="get-started" className={styles.formSection}>
+        <div className={styles.formCard}>
+          <div className={styles.formCardHead}>
+            <h2 className={styles.formCardTitle}>Get started in under a minute</h2>
+            <p className={`body-sm ${styles.formCardSub}`}>
+              Create your account, upload your resume once, and Mitra remembers everything across sessions.
+            </p>
+          </div>
+
+          <div className={styles.ctaSteps}>
+            {[
+              { n: '1', t: 'Create your account', d: 'Email and password — takes 10 seconds.' },
+              { n: '2', t: 'Upload your resume', d: 'Mitra maps your skills and builds your memory.' },
+              { n: '3', t: 'Start the conversation', d: 'Find internships, close skill gaps, prep interviews.' },
+            ].map(s => (
+              <div key={s.n} className={styles.ctaStep}>
+                <span className={styles.ctaStepNum}>{s.n}</span>
+                <div>
+                  <div className={styles.ctaStepTitle}>{s.t}</div>
+                  <div className={styles.ctaStepDesc}>{s.d}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <button className={`btn btn-white ${styles.submitBtn}`} onClick={goStart}>
+            {authed ? 'Go to dashboard' : 'Create your account'}
+          </button>
+        </div>
+      </section>
     </div>
   );
 }

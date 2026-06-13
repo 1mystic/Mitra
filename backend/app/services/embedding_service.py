@@ -19,12 +19,18 @@ def _get_model() -> SentenceTransformer:
 
 def _encode_sync(text: str) -> list[float]:
     model = _get_model()
-    return model.encode(text, normalize_embeddings=True).tolist()
+    return model.encode(text, normalize_embeddings=True, show_progress_bar=False).tolist()
 
 
 def _encode_batch_sync(texts: list[str]) -> list[list[float]]:
     model = _get_model()
-    return model.encode(texts, normalize_embeddings=True).tolist()
+    return model.encode(
+        texts,
+        normalize_embeddings=True,
+        show_progress_bar=False,
+        batch_size=64,
+        convert_to_numpy=True,
+    ).tolist()
 
 
 async def embed(text: str) -> list[float]:

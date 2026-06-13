@@ -26,6 +26,9 @@ class AgentState(TypedDict):
     # Memory context injected at graph entry
     memory_context: list[str]
 
+    # Relevant resume chunks (RAG) injected at graph entry
+    resume_context: list[str]
+
     # Final streamed response (set by responder node)
     final_response: str
 

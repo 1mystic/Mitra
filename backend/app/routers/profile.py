@@ -7,8 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..database import get_db
 from ..models.db import SkillProfile, User
-from ..models.schemas import SkillProfileRead
-from ..services import embedding_service, skill_graph
+from ..models.schemas import ProfileUploadResponse, SkillProfileRead
+from ..services import embedding_service, resume_service, skill_graph
 
 router = APIRouter(prefix="/api/profile", tags=["profile"])
 
@@ -23,7 +23,7 @@ def _extract_text_from_pdf(data: bytes) -> str:
     return "\n".join(text_parts)
 
 
-@router.post("/upload", response_model=SkillProfileRead)
+@router.post("/upload", response_model=ProfileUploadResponse)
 async def upload_resume(
     user_id: str = Form(...),
     file: UploadFile = File(...),
@@ -35,24 +35,33 @@ async def upload_resume(
         raise HTTPException(status_code=404, detail="User not found")
 
     raw = await file.read()
+    if not raw:
+        raise HTTPException(status_code=422, detail="Uploaded file is empty")
 
-    if file.content_type == "application/pdf" or file.filename.endswith(".pdf"):
-        resume_text = _extract_text_from_pdf(raw)
-    else:
-        resume_text = raw.decode("utf-8", errors="ignore")
+    filename = file.filename or ""
+    try:
+        if file.content_type == "application/pdf" or filename.lower().endswith(".pdf"):
+            resume_text = _extract_text_from_pdf(raw)
+        else:
+            resume_text = raw.decode("utf-8", errors="ignore")
+    except Exception as exc:  # pdfplumber can raise on corrupt PDFs
+        raise HTTPException(status_code=422, detail=f"Could not read file: {exc}") from exc
 
     if not resume_text.strip():
-        raise HTTPException(status_code=422, detail="Could not extract text from file")
+        raise HTTPException(
+            status_code=422,
+            detail="Could not extract any text from this file. If it's a scanned PDF, please upload a text-based PDF.",
+        )
 
-    # Extract skills
+    # Extract structured skill profile
     extracted = await skill_graph.extract_from_text(resume_text)
 
-    # Build profile embedding
+    # Build profile-level embedding (skills + project descriptions)
     embed_text = (
         " ".join(extracted["skills"].keys())
         + " "
         + " ".join(p.get("description", "") for p in extracted["projects"])
-    )
+    ).strip() or resume_text[:1000]
     embedding = await embedding_service.embed(embed_text)
 
     # Upsert SkillProfile
@@ -77,7 +86,14 @@ async def upload_resume(
 
     await db.commit()
     await db.refresh(profile)
-    return profile
+
+    # Chunk + embed + persist for RAG retrieval (separate transaction)
+    chunk_count = await resume_service.store_chunks(db, user_id, resume_text)
+
+    return ProfileUploadResponse(
+        **SkillProfileRead.model_validate(profile).model_dump(),
+        chunk_count=chunk_count,
+    )
 
 
 @router.get("/{user_id}", response_model=SkillProfileRead)

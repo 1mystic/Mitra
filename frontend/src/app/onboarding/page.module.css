@@ -1,0 +1,227 @@
+.page {
+  min-height: calc(100vh - var(--nav-h));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s8) var(--s6);
+}
+
+.card {
+  width: 100%;
+  max-width: 540px;
+  background: var(--bg-card);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-2xl);
+  padding: var(--s12) var(--s10);
+  box-shadow: var(--shadow-elevated);
+  text-align: center;
+}
+
+.step {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: var(--s4);
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -0.5px;
+  margin: 0 0 var(--s3);
+}
+
+.sub {
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.6;
+  margin: 0 auto var(--s8);
+  max-width: 420px;
+}
+
+/* Dropzone */
+.dropzone {
+  border: 1.5px dashed var(--line-strong);
+  border-radius: var(--r-lg);
+  padding: var(--s10) var(--s6);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: var(--bg-input);
+}
+
+.dropzone:hover,
+.dropzoneActive {
+  border-color: var(--accent-line);
+  background: var(--accent-dim);
+}
+
+.dropIcon {
+  color: var(--text-2);
+  margin-bottom: var(--s4);
+}
+
+.dropTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-1);
+  margin-bottom: var(--s2);
+}
+
+.dropHint {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* Processing stages */
+.stages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+  text-align: left;
+  margin: var(--s8) auto 0;
+  max-width: 340px;
+}
+
+.stage {
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+  font-size: 14px;
+  color: var(--text-3);
+  transition: color 0.2s ease;
+}
+
+.stageActive {
+  color: var(--text-1);
+  font-weight: 500;
+}
+
+.stageDone {
+  color: var(--text-2);
+}
+
+.stageIcon {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stageDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-3);
+}
+
+.checkIcon {
+  color: var(--green);
+}
+
+/* Elapsed time counter */
+.elapsed {
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Rotating tip card */
+.tip {
+  margin: var(--s7) auto 0;
+  max-width: 360px;
+  background: var(--bg-input);
+  border: 1px solid var(--line-light);
+  border-radius: var(--r-lg);
+  padding: var(--s4) var(--s5);
+  font-size: 12.5px;
+  color: var(--text-2);
+  line-height: 1.55;
+  text-align: left;
+  transition: opacity 0.4s ease;
+}
+
+.tipLabel {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-3);
+  margin-bottom: var(--s2);
+}
+
+/* Result */
+.result {
+  margin-top: var(--s6);
+}
+
+.resultStats {
+  display: flex;
+  justify-content: center;
+  gap: var(--s8);
+  margin: var(--s6) 0 var(--s8);
+}
+
+.resultStat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s1);
+}
+
+.resultStatVal {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+.resultStatLabel {
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.error {
+  background: var(--red-dim);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--r-md);
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--red);
+  margin-top: var(--s5);
+  text-align: left;
+}
+
+.continueBtn {
+  width: 100%;
+  padding: 12px 0;
+  margin-top: var(--s4);
+  background: var(--text-1);
+  color: var(--text-inv);
+  border: none;
+  border-radius: var(--r-pill);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.continueBtn:hover {
+  opacity: 0.88;
+}
+
+.retryBtn {
+  background: none;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-pill);
+  color: var(--text-2);
+  font-size: 13px;
+  padding: 8px 20px;
+  margin-top: var(--s5);
+  cursor: pointer;
+}
