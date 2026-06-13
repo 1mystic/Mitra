@@ -1,12 +1,43 @@
 """Thin wrapper around the Anthropic SDK for all LLM calls in Mitra."""
 from __future__ import annotations
 
+import asyncio
 import json
+import sys
+from pathlib import Path
 from typing import AsyncIterator
 
 import anthropic
 
 from ..config import settings
+
+# ── Optional local intent classifier (distill_intent.py) ─────────────────────
+# Loaded lazily on first classify_intent() call when USE_LOCAL_CLASSIFIER=true.
+_local_classify_fn = None
+
+
+def _get_local_classifier():
+    global _local_classify_fn
+    if _local_classify_fn is not None:
+        return _local_classify_fn
+
+    # Add ml/ to sys.path so distill_intent can be imported from the backend
+    ml_dir = Path(__file__).parent.parent.parent.parent.parent / "ml"
+    if ml_dir.exists() and str(ml_dir) not in sys.path:
+        sys.path.insert(0, str(ml_dir))
+
+    try:
+        import distill_intent as _di
+        if settings.local_classifier_path:
+            import os
+            os.environ["LOCAL_CLASSIFIER_PATH"] = settings.local_classifier_path
+        _local_classify_fn = _di.classify_intent
+        return _local_classify_fn
+    except Exception as exc:
+        raise RuntimeError(
+            f"USE_LOCAL_CLASSIFIER=true but failed to import distill_intent: {exc}. "
+            "Check LOCAL_CLASSIFIER_PATH and ensure the ml/ checkpoint exists."
+        ) from exc
 
 _client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
 
@@ -51,7 +82,20 @@ async def stream_complete(
 
 
 async def classify_intent(message: str) -> str:
-    """Classify a user message into a routing intent."""
+    """
+    Classify a user message into a routing intent label.
+
+    Uses the local fine-tuned classifier when USE_LOCAL_CLASSIFIER=true in .env,
+    otherwise calls Claude. Both paths return the same set of labels:
+      opportunities | resume | gaps | roadmap | track | interview | general
+    """
+    if settings.use_local_classifier:
+        fn = _get_local_classifier()
+        loop = asyncio.get_event_loop()
+        # Synchronous model inference — run in thread pool to avoid blocking event loop
+        label = await loop.run_in_executor(None, fn, message)
+        return label
+
     prompt = f"""Classify this message into exactly one intent label. Return only the label, nothing else.
 
 Intents:

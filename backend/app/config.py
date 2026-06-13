@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     adzuna_app_id: str = ""
     adzuna_app_key: str = ""
 
+    # Local intent classifier (fine-tuned Qwen2.5-3B via distill_intent.py)
+    # Set USE_LOCAL_CLASSIFIER=true and LOCAL_CLASSIFIER_PATH=/path/to/adapter
+    use_local_classifier: bool = False
+    local_classifier_path: str = ""
+
     @property
     def async_database_url(self) -> str:
         url = self.database_url
