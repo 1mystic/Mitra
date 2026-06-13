@@ -8,7 +8,7 @@ from ..models.schemas import ApplicationCreate, ApplicationRead, ApplicationUpda
 
 router = APIRouter(prefix="/api/tracker", tags=["tracker"])
 
-VALID_STATUSES = {"applied", "interview", "offered", "rejected", "withdrawn"}
+VALID_STATUSES = {"wishlist", "applied", "interview", "offered", "rejected", "withdrawn"}
 
 
 @router.get("/{user_id}", response_model=list[ApplicationRead])

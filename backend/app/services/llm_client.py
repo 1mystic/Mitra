@@ -43,13 +43,35 @@ _client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
 
 
 async def complete(prompt: str, system: str = "", max_tokens: int = 2048) -> str:
-    """Single-turn completion. Returns the full response as a string."""
+    """Single-turn completion with the primary (Sonnet) model."""
     messages = [{"role": "user", "content": prompt}]
     kwargs: dict = {"model": settings.claude_model, "max_tokens": max_tokens, "messages": messages}
     if system:
         kwargs["system"] = system
     response = await _client.messages.create(**kwargs)
     return response.content[0].text
+
+
+async def fast_complete(prompt: str, system: str = "", max_tokens: int = 512) -> str:
+    """Fast/cheap completion via Haiku — use for routing, classification, short summaries."""
+    messages = [{"role": "user", "content": prompt}]
+    kwargs: dict = {"model": settings.fast_model, "max_tokens": max_tokens, "messages": messages}
+    if system:
+        kwargs["system"] = system
+    response = await _client.messages.create(**kwargs)
+    return response.content[0].text
+
+
+async def fast_complete_json(prompt: str, system: str = "", max_tokens: int = 512) -> dict | list:
+    """fast_complete + JSON parse. Falls back to empty dict on parse error."""
+    raw = await fast_complete(prompt, system=system, max_tokens=max_tokens)
+    text = raw.strip()
+    if text.startswith("```"):
+        text = text.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        return {}
 
 
 async def complete_json(prompt: str, system: str = "", max_tokens: int = 2048) -> dict | list:
@@ -110,7 +132,7 @@ Intents:
 Message: {message}
 
 Intent:"""
-    result = await complete(prompt, max_tokens=20)
+    result = await fast_complete(prompt, max_tokens=10)
     label = result.strip().lower().split()[0]
     valid = {"opportunities", "resume", "gaps", "roadmap", "track", "interview", "general"}
     return label if label in valid else "general"

@@ -3,16 +3,20 @@ Mitra LangGraph multi-agent orchestration.
 
 Flow:
   START
-    → memory_retriever      (inject relevant memories into state)
-    → intent_router         (classify intent, route to sub-agent)
-    ↓
-  [opportunity_hunter] → gap_detector → roadmap_planner → responder → END
-  [resume_analyzer]                                      → responder → END
-  [gaps]               → gap_detector → roadmap_planner → responder → END
-  [roadmap]                            → roadmap_planner → responder → END
-  [application_tracker]                                  → responder → END
-  [interview_coach]                                      → END (sets final_response itself)
-  [general]                                              → responder → END
+    ├─→ memory_retriever   (parallel: vector search for memories + resume chunks)
+    └─→ intent_router      (parallel: Haiku intent classification)
+          ↓ (fan-in at router_node, then conditional branch)
+
+  [opportunities]   → opportunity_hunter → responder → memory_writer → END
+  [resume]          → resume_analyzer   → responder → memory_writer → END
+  [gaps]            → gap_detector → roadmap_planner → responder → memory_writer → END
+  [roadmap]         → roadmap_planner   → responder → memory_writer → END
+  [track]           → application_tracker → responder → memory_writer → END
+  [interview]       → interview_coach   → responder → memory_writer → END
+  [general]         → responder         → memory_writer → END
+
+memory_retriever and intent_router run in parallel (different resources: DB vs LLM).
+opportunity_hunter routes directly to responder — gap/roadmap are separate intents.
 """
 from __future__ import annotations
 
@@ -65,6 +69,11 @@ def route_intent(state: AgentState) -> str:
     return state.get("intent", "general")
 
 
+async def router_node(state: AgentState) -> dict:
+    """Fan-in join point after parallel memory_retriever + intent_router."""
+    return {"intent": state.get("intent", "general")}
+
+
 async def memory_writer_node(state: AgentState, db: AsyncSession) -> dict:
     """Persist the completed conversation turn as an episodic memory episode."""
     user_id = state["user_id"]
@@ -80,7 +89,7 @@ async def responder_node(state: AgentState) -> dict:
     Called by all paths except interview_coach (which writes final_response directly).
     """
     if state.get("final_response"):
-        return {}  # interview_coach already set it
+        return {"error": None}  # interview_coach already set final_response
 
     user_message = state["messages"][-1].content
     intent = state.get("intent", "general")
@@ -116,7 +125,7 @@ async def responder_node(state: AgentState) -> dict:
     roadmap = state.get("roadmap")
     if roadmap and roadmap.get("steps"):
         steps = roadmap["steps"][:5]
-        step_lines = [f"{i+1}. {s['step']} (~{s['hours']}h) — {s['resource']}" for i, s in enumerate(steps)]
+        step_lines = [f"{i+1}. {s['step']} (~{s['hours']}h): {s['resource']}" for i, s in enumerate(steps)]
         ctx_parts.append("Learning roadmap:\n" + "\n".join(step_lines))
         if roadmap.get("summary"):
             ctx_parts.append(f"Roadmap summary: {roadmap['summary']}")
@@ -153,9 +162,10 @@ def build_graph(db: AsyncSession) -> "CompiledGraph":
     """Build and compile the Mitra agent graph, binding the DB session."""
     builder = StateGraph(AgentState)
 
-    # Register nodes (all bound to the DB session for this request)
+    # Register nodes
     builder.add_node("memory_retriever",    _bind_db(memory_retriever_node, db))
     builder.add_node("intent_router",       intent_router_node)
+    builder.add_node("router",              router_node)
     builder.add_node("opportunity_hunter",  _bind_db(opportunity_hunter_node, db))
     builder.add_node("resume_analyzer",     _bind_db(resume_analyzer_node, db))
     builder.add_node("gap_detector",        _bind_db(gap_detector_node, db))
@@ -165,13 +175,16 @@ def build_graph(db: AsyncSession) -> "CompiledGraph":
     builder.add_node("responder",           responder_node)
     builder.add_node("memory_writer",       _bind_db(memory_writer_node, db))
 
-    # Entry
+    # Parallel entry: memory_retriever (DB vector search) and intent_router (Haiku LLM)
+    # run concurrently in the same superstep, then fan-in at router_node.
     builder.add_edge(START, "memory_retriever")
-    builder.add_edge("memory_retriever", "intent_router")
+    builder.add_edge(START, "intent_router")
+    builder.add_edge("memory_retriever", "router")
+    builder.add_edge("intent_router",    "router")
 
-    # Route by intent
+    # Route by intent from the fan-in node
     builder.add_conditional_edges(
-        "intent_router",
+        "router",
         route_intent,
         {
             "opportunities": "opportunity_hunter",
@@ -184,13 +197,20 @@ def build_graph(db: AsyncSession) -> "CompiledGraph":
         },
     )
 
-    # Sub-agent chains
-    builder.add_edge("opportunity_hunter",  "gap_detector")
+    # opportunity_hunter goes directly to responder — gap analysis and roadmap
+    # are separate intents ("gaps", "roadmap") so we don't chain them here.
+    builder.add_edge("opportunity_hunter",  "responder")
+
+    # gaps intent: full analysis chain
     builder.add_edge("gap_detector",        "roadmap_planner")
     builder.add_edge("roadmap_planner",     "responder")
+
+    # remaining direct paths to responder
     builder.add_edge("resume_analyzer",     "responder")
     builder.add_edge("application_tracker", "responder")
     builder.add_edge("interview_coach",     "responder")
+
+    # every path converges at responder → memory_writer → END
     builder.add_edge("responder",           "memory_writer")
     builder.add_edge("memory_writer",       END)
 

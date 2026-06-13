@@ -62,10 +62,14 @@ export default function Nav() {
       </div>
 
       <div className={styles.right}>
-        {authed && (
+        {authed ? (
           <button onClick={handleLogout} className={styles.signOutBtn}>
             Sign out
           </button>
+        ) : (
+          <Link href="/auth" className={styles.signInBtn}>
+            Sign in
+          </Link>
         )}
       </div>
     </nav>

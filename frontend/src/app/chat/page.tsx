@@ -478,32 +478,6 @@ function ChatPageInner() {
           </a>
         )}
 
-        {/* Pipeline status */}
-        {(streaming || pipeSteps.length > 0) && (
-          <div className={styles.pipeSection}>
-            <span className={styles.pipeLabel}>Agent pipeline</span>
-            {gapScore !== null && (
-              <div className={styles.pipeScoreBadge}>
-                <span className={styles.pipeScoreNum}>{gapScore}%</span>
-                <span className={styles.pipeScoreLabel}>skill match</span>
-              </div>
-            )}
-            <div className={styles.pipe}>
-              {pipeSteps.filter(s => s.node !== 'memory_writer').map((step) => (
-                <div key={step.node} className={`${styles.pipeStep} ${!step.done ? styles.pipeActive : styles.pipeDone}`}>
-                  <span className={styles.pipeDot} />
-                  <span className={styles.pipeStepLabel}>{step.detail || NODES[step.node] || step.node}</span>
-                  {!step.done && <span className="spinner spinner-sm spinner-accent" style={{ marginLeft: 'auto' }} />}
-                  {step.done && (
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: 'auto', color: 'var(--green)' }}>
-                      <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         <div className={styles.sideFooter}>
           <span className={styles.sideUser}>{userName}</span>
@@ -595,6 +569,43 @@ function ChatPageInner() {
                       )}
                       {streaming && idx === messages.length - 1 && msg.content !== '' && (
                         <span className={styles.cursor} />
+                      )}
+
+                      {/* Inline agent pipeline card */}
+                      {streaming && idx === messages.length - 1 && pipeSteps.filter(s => s.node !== 'memory_writer').length > 0 && (
+                        <div className={styles.agentPipeCard}>
+                          <div className={styles.agentPipeHeader}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                            </svg>
+                            <span className={styles.agentPipeLabel}>Agent pipeline</span>
+                            {gapScore !== null && (
+                              <span className={styles.agentPipeScore}>{gapScore}% match</span>
+                            )}
+                          </div>
+                          <div className={styles.agentPipeSteps}>
+                            {pipeSteps.filter(s => s.node !== 'memory_writer').map((step) => (
+                              <div
+                                key={step.node}
+                                className={`${styles.agentPipeStep} ${!step.done ? styles.agentPipeStepActive : styles.agentPipeStepDone}`}
+                              >
+                                <span className={styles.agentPipeStepDot}>
+                                  {step.done ? (
+                                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                      <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                  ) : null}
+                                </span>
+                                <span className={styles.agentPipeStepName}>
+                                  {step.detail || NODES[step.node] || step.node}
+                                </span>
+                                {!step.done && (
+                                  <span className={styles.agentPipeStepSpinner} />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       )}
 
                       {/* Opportunity cards */}

@@ -477,6 +477,109 @@
   color: var(--text-1);
 }
 
+/* ── Inline agent pipeline card ──────────────────────────────────────────── */
+
+.agentPipeCard {
+  margin-top: 14px;
+  background: rgba(12,13,18,0.7);
+  border: 1px solid rgba(175,199,232,0.12);
+  border-radius: var(--r-lg);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: msgFade 0.2s ease both;
+  max-width: 360px;
+}
+
+.agentPipeHeader {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-3);
+}
+
+.agentPipeLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  flex: 1;
+}
+
+.agentPipeScore {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--mint);
+  background: var(--mint-dim);
+  border: 1px solid var(--mint-line);
+  border-radius: var(--r-pill);
+  padding: 2px 8px;
+}
+
+.agentPipeSteps {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.agentPipeStep {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  line-height: 1.3;
+  transition: color var(--t);
+}
+
+.agentPipeStepDone {
+  color: var(--text-3);
+}
+
+.agentPipeStepActive {
+  color: var(--sky);
+}
+
+.agentPipeStepDot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--t);
+}
+
+.agentPipeStepDone .agentPipeStepDot {
+  background: rgba(168,213,194,0.12);
+  border: 1px solid rgba(168,213,194,0.25);
+  color: var(--mint);
+}
+
+.agentPipeStepActive .agentPipeStepDot {
+  background: rgba(175,199,232,0.10);
+  border: 1px solid rgba(175,199,232,0.30);
+  animation: pipePulse 1.2s ease infinite;
+}
+
+.agentPipeStepName {
+  flex: 1;
+}
+
+.agentPipeStepSpinner {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(175,199,232,0.20);
+  border-top-color: var(--sky);
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
 /* Cursor & thinking */
 .cursor {
   display: inline-block;

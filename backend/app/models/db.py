@@ -101,7 +101,7 @@ class Application(Base):
     user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     company = Column(String, nullable=False)
     role = Column(String, nullable=False)
-    status = Column(String, default="applied")   # applied | interview | offered | rejected
+    status = Column(String, default="applied")   # wishlist | applied | interview | offered | rejected | withdrawn
     applied_date = Column(String, nullable=True)
     deadline = Column(String, nullable=True)
     notes = Column(Text, nullable=True)

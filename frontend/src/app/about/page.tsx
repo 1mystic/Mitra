@@ -1,3 +1,4 @@
+import Footer from '../components/Footer';
 import styles from './page.module.css';
 
 const STACK = [
@@ -19,6 +20,7 @@ const AGENTS = [
 
 export default function AboutPage() {
   return (
+    <>
     <div className={styles.page}>
       <div className={styles.container}>
 
@@ -107,5 +109,7 @@ export default function AboutPage() {
 
       </div>
     </div>
+    <Footer />
+    </>
   );
 }

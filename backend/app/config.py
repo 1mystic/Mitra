@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     langsmith_project: str = "mitra"
 
     claude_model: str = "claude-sonnet-4-6"
+    fast_model: str = "claude-haiku-4-5-20251001"   # used for routing/classification
     embedding_model: str = "all-MiniLM-L6-v2"
     embedding_dim: int = 384
 

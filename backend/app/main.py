@@ -21,6 +21,9 @@ from .services import embedding_service
 async def lifespan(app: FastAPI):
     await init_db()
     scheduler.start()
+    # Pre-warm the embedding model so the first request doesn't pay the load cost
+    import asyncio
+    await asyncio.get_event_loop().run_in_executor(None, embedding_service._get_model)
     yield
     scheduler.stop()
 

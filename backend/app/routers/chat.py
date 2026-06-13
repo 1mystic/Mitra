@@ -151,13 +151,17 @@ async def chat_stream(body: ChatRequest, db: AsyncSession = Depends(get_db)):
                     score = gap.get("match_score", 0)
                     yield f"data: {json.dumps({'type': 'data', 'key': 'gap_score', 'value': round(score * 100)})}\n\n"
 
-                # Stream response text from the responder
-                if node_name == "responder" and update.get("final_response"):
-                    text = update["final_response"]
-                    words = text.split(" ")
-                    for i, word in enumerate(words):
-                        chunk = word + (" " if i < len(words) - 1 else "")
-                        yield f"data: {json.dumps({'type': 'token', 'chunk': chunk})}\n\n"
+                # Stream response text once the responder node fires.
+                # Read from accumulated state, not the bare update — interview_coach
+                # sets final_response on its own node and responder returns {} for it,
+                # so update.get("final_response") would be empty in that path.
+                if node_name == "responder":
+                    text = accumulated.get("final_response", "")
+                    if text:
+                        words = text.split(" ")
+                        for i, word in enumerate(words):
+                            chunk = word + (" " if i < len(words) - 1 else "")
+                            yield f"data: {json.dumps({'type': 'token', 'chunk': chunk})}\n\n"
 
         except Exception as exc:
             yield f"data: {json.dumps({'type': 'error', 'message': str(exc)})}\n\n"
@@ -172,6 +176,8 @@ def _progress_detail(node: str, update: dict, state: dict) -> str:
     if node == "memory_retriever":
         n = len(update.get("memory_context") or [])
         return f"Recalled {n} memor{'y' if n == 1 else 'ies'}" if n else "Checking memory…"
+    if node == "router":
+        return "Ready"
     if node == "intent_router":
         intent = update.get("intent") or state.get("intent") or "general"
         labels = {

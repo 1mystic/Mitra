@@ -124,10 +124,34 @@
   padding: 5px 14px;
   cursor: pointer;
   transition: all var(--t);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
 }
 .signOutBtn:hover {
   background: var(--bg-active);
   color: var(--text-1);
+}
+
+.signInBtn {
+  background: rgba(175,199,232,0.10);
+  border: 1px solid rgba(175,199,232,0.25);
+  border-radius: var(--r-pill);
+  color: var(--sky);
+  font-size: 12px;
+  font-family: var(--font);
+  font-weight: 500;
+  padding: 5px 14px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: all var(--t);
+}
+.signInBtn:hover {
+  background: rgba(175,199,232,0.18);
+  color: var(--text-1);
+  border-color: rgba(175,199,232,0.4);
 }
 
 /* Mobile */

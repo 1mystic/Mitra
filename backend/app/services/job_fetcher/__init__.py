@@ -27,6 +27,44 @@ logger = logging.getLogger(__name__)
 STALE_DAYS = 30
 
 
+async def quick_fetch(limit_per_source: int = 3) -> list[FetchedJob]:
+    """Lightweight real-time fetch — top N from each source, 8-second total timeout.
+
+    Used by opportunity_hunter when the user asks for 'latest/recent' listings.
+    Returns raw FetchedJob objects; call ingest_jobs() to upsert them.
+    """
+    try:
+        results = await asyncio.wait_for(
+            asyncio.gather(
+                _safe("adzuna", adzuna.fetch),
+                _safe("internshala", internshala.fetch),
+                _safe("himalayas", himalayas.fetch),
+                _safe("remotive", remotive.fetch),
+                _safe("unstop", unstop.fetch),
+            ),
+            timeout=8.0,
+        )
+    except asyncio.TimeoutError:
+        logger.warning("quick_fetch timed out after 8 s — returning partial results")
+        return []
+    except Exception as exc:
+        logger.warning("quick_fetch error: %s", exc)
+        return []
+
+    jobs: list[FetchedJob] = []
+    for _, fetched, _ in results:
+        jobs.extend(fetched[:limit_per_source])
+    return jobs
+
+
+async def ingest_jobs(jobs: list[FetchedJob]) -> int:
+    """Upsert a list of FetchedJobs into the DB. Creates its own session."""
+    if not jobs:
+        return 0
+    async with AsyncSessionLocal() as db:
+        return await _upsert_all(db, jobs)
+
+
 async def run() -> dict:
     """Public entry point: fetch → upsert → prune. Returns stats dict.
 
