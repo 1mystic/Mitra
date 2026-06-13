@@ -70,7 +70,8 @@ async def memory_writer_node(state: AgentState, db: AsyncSession) -> dict:
     user_id = state["user_id"]
     content, episode_type, importance = memory_service.build_episode(state)
     await memory_service.store(db, user_id, content, episode_type=episode_type, importance=importance)
-    return {}
+    # LangGraph requires at least one known key in every node return
+    return {"error": None}
 
 
 async def responder_node(state: AgentState) -> dict:

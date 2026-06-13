@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .database import init_db
-from .routers import admin, auth, chat, opportunities, profile, tracker, users
+from .routers import admin, auth, chat, history, opportunities, profile, tracker, users
 from . import scheduler
 
 
@@ -41,6 +41,7 @@ app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(users.router)
 app.include_router(profile.router)
+app.include_router(history.router)
 app.include_router(opportunities.router)
 app.include_router(tracker.router)
 app.include_router(chat.router)

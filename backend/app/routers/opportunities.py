@@ -1,11 +1,19 @@
 from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Optional
 
 from ..database import get_db
 from ..models.db import Opportunity
 from ..models.schemas import OpportunityCreate, OpportunityRead
 from ..services import embedding_service
+
+
+class SearchRequest(BaseModel):
+    query: str
+    user_id: Optional[str] = None
+    limit: Optional[int] = 10
 
 router = APIRouter(prefix="/api/opportunities", tags=["opportunities"])
 
@@ -25,12 +33,9 @@ async def list_opportunities(
 
 
 @router.post("/search", response_model=list[OpportunityRead])
-async def search_opportunities(
-    query: str,
-    limit: int = Query(10, le=20),
-    db: AsyncSession = Depends(get_db),
-):
-    embedding = await embedding_service.embed(query)
+async def search_opportunities(body: SearchRequest, db: AsyncSession = Depends(get_db)):
+    limit = min(body.limit or 10, 20)
+    embedding = await embedding_service.embed(body.query)
     stmt = (
         select(Opportunity)
         .where(Opportunity.is_active == True)
@@ -39,7 +44,25 @@ async def search_opportunities(
         .limit(limit)
     )
     result = await db.execute(stmt)
-    return result.scalars().all()
+    rows = result.scalars().all()
+    # Fallback to text scan when no embeddings present yet
+    if not rows:
+        q = body.query.lower()
+        stmt2 = (
+            select(Opportunity)
+            .where(Opportunity.is_active == True)
+            .order_by(Opportunity.fetched_at.desc())
+            .limit(50)
+        )
+        res2 = await db.execute(stmt2)
+        all_opps = res2.scalars().all()
+        rows = [
+            o for o in all_opps
+            if q in (o.title or "").lower()
+            or q in (o.company or "").lower()
+            or q in (o.description or "").lower()
+        ][:limit]
+    return rows
 
 
 @router.post("", response_model=OpportunityRead, status_code=201)

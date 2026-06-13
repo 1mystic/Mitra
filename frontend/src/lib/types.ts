@@ -58,12 +58,12 @@ export interface Opportunity {
   company: string;
   location: string;
   type: string;
-  skills_required: string[];
+  required_skills: string[];
   description: string | null;
   url: string | null;
   stipend: string | null;
   deadline: string | null;
-  created_at: string;
+  created_at?: string;
   match_score?: number;
 }
 
@@ -72,7 +72,7 @@ export interface OpportunityCreate {
   company: string;
   location: string;
   type: string;
-  skills_required: string[];
+  required_skills: string[];
   description?: string;
   url?: string;
   stipend?: string;
@@ -120,16 +120,43 @@ export interface ChatResponse {
 }
 
 export interface SSEEvent {
-  type: 'progress' | 'token' | 'done' | 'error';
+  type: 'progress' | 'token' | 'done' | 'error' | 'data';
   node?: string;
+  detail?: string;   // contextual status label from backend
   chunk?: string;
   message?: string;
+  key?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  value?: any;
 }
 
 export interface SearchRequest {
   query: string;
   user_id?: string;
   limit?: number;
+}
+
+// ── Chat History ────────────────────────────────────────────────────────────
+
+export interface ConversationRead {
+  id: string;
+  user_id: string;
+  title: string | null;
+  created_at: string;
+  updated_at: string | null;
+  message_count: number;
+}
+
+export interface ChatHistoryMessage {
+  id: string;
+  conversation_id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  created_at: string;
+}
+
+export interface ConversationWithMessages extends ConversationRead {
+  messages: ChatHistoryMessage[];
 }
 
 // ── Auth ────────────────────────────────────────────────────────────────────

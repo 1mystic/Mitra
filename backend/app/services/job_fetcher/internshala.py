@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import re
 
 import httpx
 from bs4 import BeautifulSoup
@@ -66,25 +65,31 @@ def _parse_page(html: str, category: str, default_skills: list[str]) -> list[Fet
     soup = BeautifulSoup(html, "html.parser")
     results: list[FetchedJob] = []
 
-    # Primary selector: id="internship_id_XXXXX" divs
-    cards = soup.select("[id^='internship_id_']")
+    # The listing page uses .individual_internship for each card.
+    # Each card contains an <a href="/internship/detail/{slug}{id}"> anchor —
+    # that href is the canonical URL and must be extracted directly because
+    # the numeric suffix in the URL differs from the card's element ID.
+    cards = soup.select(".individual_internship")
     if not cards:
-        # Fallback: class-based selector used in some page variants
-        cards = soup.select(".individual_internship")
+        cards = soup.select("[id^='internship_id_']")
 
     for card in cards:
         try:
-            # Extract numeric ID from the element id attribute
-            raw_id = card.get("id", "")
-            iid_match = re.search(r"(\d+)$", raw_id)
-            if not iid_match:
+            # Extract the canonical detail URL from the anchor inside the card
+            link_el = card.select_one("a[href*='/internship/detail/']")
+            if not link_el:
                 continue
-            iid = iid_match.group(1)
+            href = link_el.get("href", "").strip()
+            if not href:
+                continue
+            url = f"https://internshala.com{href}" if href.startswith("/") else href
+            # Use the full href path tail as a stable external_id
+            external_id = f"is_{href.rstrip('/').split('/')[-1]}"
 
             title = _text(card, [
+                ".profile",
                 ".job-internship-name",
                 "h3.job-internship-name",
-                ".profile",
             ])
             company = _text(card, [
                 ".company-name",
@@ -96,22 +101,30 @@ def _parse_page(html: str, category: str, default_skills: list[str]) -> list[Fet
                 ".locations span",
                 ".location_link",
             ]) or "India"
-            stipend = _text(card, [".stipend", ".stipend_container .stipend"])
-            duration = _text(card, [".other-detail-item .other-details"])
+            stipend_raw = _text(card, [".stipend", ".stipend_container .stipend"])
+            # Treat "Unpaid" as no stipend rather than storing misleading text
+            stipend = stipend_raw if stipend_raw and stipend_raw.lower() not in ("unpaid", "0") else None
+            duration = _text(card, [".other-detail-item .other-details", ".duration"])
 
             if not title or not company:
                 continue
+
+            desc = f"{title} at {company}"
+            if location:
+                desc += f" — {location}"
+            if duration:
+                desc += f". Duration: {duration}."
 
             results.append(FetchedJob(
                 title=title,
                 company=company,
                 source="internshala",
-                external_id=f"is_{iid}",
-                url=f"https://internshala.com/internship/detail/{iid}",
+                external_id=external_id,
+                url=url,
                 location=location,
-                description=f"{title} internship at {company}. Duration: {duration or 'see listing'}.",
+                description=desc,
                 skills=default_skills,
-                stipend=stipend or None,
+                stipend=stipend,
                 deadline=None,
                 job_type="internship",
             ))

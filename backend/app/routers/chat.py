@@ -47,6 +47,7 @@ async def _build_initial_state(user_id: str, message: str, db: AsyncSession) -> 
         "roadmap": None,
         "tracked_applications": [],
         "memory_context": [],
+        "resume_context": [],
         "final_response": "",
         "error": None,
     }
@@ -106,22 +107,39 @@ async def chat_stream(body: ChatRequest, db: AsyncSession = Depends(get_db)):
     graph = build_graph(db)
 
     async def event_generator():
-        final_state = {}
+        accumulated: dict = {**initial_state}
         try:
             async for event in graph.astream(initial_state, stream_mode="updates"):
                 node_name = list(event.keys())[0]
                 update = event[node_name]
 
-                # Emit progress notification
-                yield f"data: {json.dumps({'type': 'progress', 'node': node_name})}\n\n"
+                # Accumulate state updates first so we can annotate progress events
+                for k, v in update.items():
+                    if k == "messages":
+                        accumulated.setdefault("messages", [])
+                        if isinstance(v, list):
+                            accumulated["messages"] = accumulated["messages"] + v
+                    else:
+                        accumulated[k] = v
 
-                # Cache final state for post-processing
-                final_state.update(update)
+                # Build a richer, contextual progress label
+                detail = _progress_detail(node_name, update, accumulated)
+                yield f"data: {json.dumps({'type': 'progress', 'node': node_name, 'detail': detail})}\n\n"
 
-                # If the responder just ran, stream the response text
+                # Emit structured opportunity data immediately when available
+                if node_name == "opportunity_hunter" and update.get("opportunities"):
+                    opps = update["opportunities"][:6]
+                    yield f"data: {json.dumps({'type': 'data', 'key': 'opportunities', 'value': opps})}\n\n"
+
+                # Emit gap data immediately when available
+                if node_name == "gap_detector" and update.get("gap_analysis"):
+                    gap = update["gap_analysis"]
+                    score = gap.get("match_score", 0)
+                    yield f"data: {json.dumps({'type': 'data', 'key': 'gap_score', 'value': round(score * 100)})}\n\n"
+
+                # Stream response text from the responder
                 if node_name == "responder" and update.get("final_response"):
                     text = update["final_response"]
-                    # Chunk by word for a streaming feel
                     words = text.split(" ")
                     for i, word in enumerate(words):
                         chunk = word + (" " if i < len(words) - 1 else "")
@@ -133,3 +151,49 @@ async def chat_stream(body: ChatRequest, db: AsyncSession = Depends(get_db)):
             yield f"data: {json.dumps({'type': 'done'})}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+def _progress_detail(node: str, update: dict, state: dict) -> str:
+    """Return a human-readable detail string for a progress event."""
+    if node == "memory_retriever":
+        n = len(update.get("memory_context") or [])
+        return f"Recalled {n} memor{'y' if n == 1 else 'ies'}" if n else "Checking memory…"
+    if node == "intent_router":
+        intent = update.get("intent") or state.get("intent") or "general"
+        labels = {
+            "opportunities": "Searching for internships",
+            "resume": "Analysing resume",
+            "gaps": "Running gap analysis",
+            "roadmap": "Planning roadmap",
+            "track": "Checking applications",
+            "interview": "Interview coaching",
+            "general": "Understanding your question",
+        }
+        return labels.get(intent, "Routing…")
+    if node == "opportunity_hunter":
+        n = len(update.get("opportunities") or [])
+        return f"Found {n} matching internship{'s' if n != 1 else ''}" if n else "Searching listings…"
+    if node == "gap_detector":
+        gap = update.get("gap_analysis") or {}
+        score = gap.get("match_score")
+        if score is not None:
+            return f"Skill match: {round(score * 100)}%"
+        return "Analysing skill gaps…"
+    if node == "roadmap_planner":
+        roadmap = update.get("roadmap") or {}
+        steps = len(roadmap.get("steps") or [])
+        return f"Built {steps}-step roadmap" if steps else "Building roadmap…"
+    if node == "resume_analyzer":
+        profile = update.get("user_profile") or {}
+        skills = len(profile.get("skills") or {})
+        return f"Extracted {skills} skills" if skills else "Reading resume…"
+    if node == "application_tracker":
+        apps = update.get("tracked_applications") or []
+        return f"Found {len(apps)} application{'s' if len(apps) != 1 else ''}"
+    if node == "interview_coach":
+        return "Crafting interview plan…"
+    if node == "responder":
+        return "Writing response…"
+    if node == "memory_writer":
+        return "Saving to memory"
+    return ""

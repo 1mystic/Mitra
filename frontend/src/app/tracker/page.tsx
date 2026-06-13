@@ -186,7 +186,7 @@ export default function TrackerPage() {
           {COLUMNS.map(col => {
             const colApps = apps.filter(a => a.status === col.status);
             return (
-              <div key={col.status} className={styles.column}>
+              <div key={col.status} className={styles.column} style={{ '--col-accent': col.dotColor } as React.CSSProperties}>
                 <div className={styles.colHead}>
                   <span className={styles.colDot} style={{ background: col.dotColor }} />
                   <span className={styles.colLabel}>{col.label}</span>

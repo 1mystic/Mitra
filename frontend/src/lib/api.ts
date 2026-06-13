@@ -5,6 +5,7 @@ import type {
   ChatRequest, ChatResponse, SSEEvent,
   RegisterRequest, LoginRequest, TokenResponse,
   ProfileUploadResponse,
+  ConversationRead, ConversationWithMessages,
 } from './types';
 import { getAuthHeader } from './auth';
 
@@ -90,6 +91,37 @@ export const tracker = {
 
   delete: (appId: string) =>
     request<void>(`/api/tracker/${appId}`, { method: 'DELETE' }),
+};
+
+/* ── Chat History ──────────────────────────────────────────────────────── */
+
+export const history = {
+  list: (userId: string) =>
+    request<ConversationRead[]>(`/api/history/conversations/${userId}`),
+
+  get: (convId: string) =>
+    request<ConversationWithMessages>(`/api/history/conversations/${convId}/messages`),
+
+  create: (userId: string, title?: string) =>
+    request<ConversationRead>('/api/history/conversations', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId, title: title ?? 'New chat' }),
+    }),
+
+  rename: (convId: string, title: string) =>
+    request<ConversationRead>(`/api/history/conversations/${convId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ title }),
+    }),
+
+  delete: (convId: string) =>
+    request<void>(`/api/history/conversations/${convId}`, { method: 'DELETE' }),
+
+  addMessage: (conversationId: string, role: 'user' | 'assistant', content: string) =>
+    request<{ id: string }>('/api/history/messages', {
+      method: 'POST',
+      body: JSON.stringify({ conversation_id: conversationId, role, content }),
+    }),
 };
 
 /* ── Auth ───────────────────────────────────────────────────────────────── */

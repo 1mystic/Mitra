@@ -105,7 +105,84 @@
   color: var(--accent);
 }
 
+/* ── Account settings ─────────────────────────────────────────────────── */
+
+.accountSection {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+.accountHead {
+  margin-bottom: 20px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-1);
+  letter-spacing: -0.01em;
+}
+
+.sectionSub {
+  font-size: 13px;
+  color: var(--text-3);
+  margin-top: 3px;
+}
+
+.accountForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+  letter-spacing: 0.01em;
+}
+
+.input {
+  background: var(--bg);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  color: var(--text-1);
+  font-size: 14px;
+  padding: 9px 14px;
+  outline: none;
+  transition: border-color var(--t);
+  width: 100%;
+  max-width: 480px;
+}
+.input::placeholder { color: var(--text-3); }
+.input:focus {
+  border-color: rgba(255,255,255,0.24);
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.04);
+}
+
+.accountFooter {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.accountSuccessMsg {
+  font-size: 13px;
+  color: var(--green);
+}
+
 @media (max-width: 768px) {
   .grid { grid-template-columns: 1fr; }
   .page { padding: 24px 16px; }
+  .accountSection { padding: 20px 16px; }
 }

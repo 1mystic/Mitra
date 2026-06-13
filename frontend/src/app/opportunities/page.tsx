@@ -7,7 +7,17 @@ import { getUserId } from '@/lib/auth';
 import type { Opportunity } from '@/lib/types';
 import styles from './page.module.css';
 
-const TYPES = ['All', 'Research', 'SWE', 'Data Science', 'ML Engineering', 'Product'];
+const FILTERS = ['All', 'Remote', 'Bangalore', 'Mumbai', 'Delhi', 'Pune', 'Hyderabad', 'Paid'];
+
+function matchesFilter(opp: Opportunity, filter: string): boolean {
+  if (filter === 'All') return true;
+  const loc = (opp.location || '').toLowerCase();
+  const title = (opp.title || '').toLowerCase();
+  const desc = (opp.description || '').toLowerCase();
+  if (filter === 'Remote') return loc.includes('remote') || loc.includes('work from home') || loc.includes('home');
+  if (filter === 'Paid') return !!opp.stipend && opp.stipend.toLowerCase() !== 'unpaid';
+  return loc.includes(filter.toLowerCase()) || title.includes(filter.toLowerCase()) || desc.includes(filter.toLowerCase());
+}
 
 function matchBadge(score?: number) {
   if (!score) return { cls: 'badge-white', label: null };
@@ -59,9 +69,7 @@ export default function OpportunitiesPage() {
     }
   }
 
-  const filtered = typeFilter === 'All'
-    ? items
-    : items.filter(o => o.type.toLowerCase().includes(typeFilter.toLowerCase()));
+  const filtered = items.filter(o => matchesFilter(o, typeFilter));
 
   return (
     <div className={styles.page}>
@@ -100,7 +108,7 @@ export default function OpportunitiesPage() {
         </div>
 
         <div className={styles.filters}>
-          {TYPES.map(t => (
+          {FILTERS.map(t => (
             <button
               key={t}
               className={`${styles.filterChip} ${typeFilter === t ? styles.filterActive : ''}`}
@@ -148,11 +156,11 @@ export default function OpportunitiesPage() {
                   )}
 
                   <div className={styles.oppSkills}>
-                    {opp.skills_required.slice(0, 5).map(s => (
+                    {opp.required_skills.slice(0, 5).map(s => (
                       <span key={s} className={styles.oppSkillTag}>{s}</span>
                     ))}
-                    {opp.skills_required.length > 5 && (
-                      <span className={styles.oppSkillTag}>+{opp.skills_required.length - 5}</span>
+                    {opp.required_skills.length > 5 && (
+                      <span className={styles.oppSkillTag}>+{opp.required_skills.length - 5}</span>
                     )}
                   </div>
 

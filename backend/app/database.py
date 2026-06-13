@@ -32,3 +32,8 @@ async def init_db():
         await conn.execute(
             text("ALTER TABLE opportunities ADD COLUMN IF NOT EXISTS external_id VARCHAR")
         )
+        # conversations + chat_history_messages are created by create_all above;
+        # these no-ops guard against partial prior deploys.
+        await conn.execute(text(
+            "ALTER TABLE conversations ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP"
+        ))

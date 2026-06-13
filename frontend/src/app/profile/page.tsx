@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { profile } from '@/lib/api';
-import type { SkillProfile } from '@/lib/types';
+import { profile, users, auth as authApi } from '@/lib/api';
+import type { SkillProfile, User } from '@/lib/types';
 import { useRequireAuth } from '@/lib/useRequireAuth';
 import styles from './page.module.css';
 
@@ -18,11 +18,18 @@ const SKILL_CATEGORIES: Record<string, string[]> = {
 export default function ProfilePage() {
   const userId = useRequireAuth();
   const [skillProfile, setSkillProfile] = useState<SkillProfile | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Account settings edit state
+  const [editName, setEditName] = useState('');
+  const [editGoal, setEditGoal] = useState('');
+  const [savingAccount, setSavingAccount] = useState(false);
+  const [accountSuccess, setAccountSuccess] = useState('');
 
   useEffect(() => {
     if (!userId) return;
@@ -30,7 +37,32 @@ export default function ProfilePage() {
       .then(p => setSkillProfile(p))
       .catch(() => setSkillProfile(null))
       .finally(() => setLoading(false));
+
+    authApi.me()
+      .then(u => {
+        setUser(u);
+        setEditName(u.name ?? '');
+        setEditGoal(u.goal ?? '');
+      })
+      .catch(() => {});
   }, [userId]);
+
+  async function handleSaveAccount(e: React.FormEvent) {
+    e.preventDefault();
+    if (!userId) return;
+    setSavingAccount(true);
+    setAccountSuccess('');
+    try {
+      const updated = await users.update(userId, { name: editName.trim(), goal: editGoal.trim() });
+      setUser(updated);
+      setAccountSuccess('Profile updated.');
+      setTimeout(() => setAccountSuccess(''), 3000);
+    } catch {
+      // ignore
+    } finally {
+      setSavingAccount(false);
+    }
+  }
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -76,6 +108,50 @@ export default function ProfilePage() {
 
       {error   && <div className={styles.alert} style={{ borderColor: 'rgba(239,68,68,0.25)', color: 'var(--red)', background: 'var(--red-dim)' }}>{error}</div>}
       {success && <div className={styles.alert} style={{ borderColor: 'rgba(63,185,80,0.25)', color: 'var(--green)', background: 'var(--green-dim)' }}>{success}</div>}
+
+      {/* Account settings */}
+      <section className={styles.accountSection}>
+        <div className={styles.accountHead}>
+          <h2 className={styles.sectionTitle}>Account Settings</h2>
+          <p className={styles.sectionSub}>Update your display name and career goal</p>
+        </div>
+        <form className={styles.accountForm} onSubmit={handleSaveAccount}>
+          <div className={styles.formGroup}>
+            <label className={styles.label} htmlFor="editName">Display Name</label>
+            <input
+              id="editName"
+              className={styles.input}
+              type="text"
+              value={editName}
+              onChange={e => setEditName(e.target.value)}
+              placeholder="Your name"
+              maxLength={80}
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label} htmlFor="editGoal">Career Goal</label>
+            <input
+              id="editGoal"
+              className={styles.input}
+              type="text"
+              value={editGoal}
+              onChange={e => setEditGoal(e.target.value)}
+              placeholder="e.g. ML internships in India"
+              maxLength={200}
+            />
+          </div>
+          <div className={styles.accountFooter}>
+            {accountSuccess && <span className={styles.accountSuccessMsg}>{accountSuccess}</span>}
+            <button
+              type="submit"
+              className="btn btn-white"
+              disabled={savingAccount || !editName.trim()}
+            >
+              {savingAccount ? <><span className="spinner spinner-sm" style={{ borderTopColor: '#000', borderColor: 'rgba(0,0,0,0.15)' }} />Saving…</> : 'Save changes'}
+            </button>
+          </div>
+        </form>
+      </section>
 
       <div className={styles.grid}>
         {/* Radar */}

@@ -38,18 +38,32 @@
 .kanban {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 16px;
+  gap: 14px;
   align-items: start;
 }
 
 .column {
   background: var(--bg-card);
+  border: 1px solid var(--line);
   border-radius: var(--r-xl);
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 16px 14px;
+  padding: 14px 12px;
   min-height: 280px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--t);
+}
+.column:hover { border-color: var(--line-strong); }
+/* Thin colour stripe at the top of each column — set via inline --col-accent */
+.column::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--col-accent, transparent);
+  opacity: 0.7;
 }
 
 .colHead {

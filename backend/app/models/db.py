@@ -127,6 +127,37 @@ class ResumeChunk(Base):
     user = relationship("User", back_populates="resume_chunks")
 
 
+class Conversation(Base):
+    """A named chat session. One user can have many conversations."""
+    __tablename__ = "conversations"
+
+    id = Column(String, primary_key=True, default=_uuid)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    title = Column(String, nullable=True)      # auto-set from first user message
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    messages = relationship(
+        "ChatHistoryMessage",
+        back_populates="conversation",
+        cascade="all, delete-orphan",
+        order_by="ChatHistoryMessage.created_at",
+    )
+
+
+class ChatHistoryMessage(Base):
+    """A single message turn inside a Conversation."""
+    __tablename__ = "chat_history_messages"
+
+    id = Column(String, primary_key=True, default=_uuid)
+    conversation_id = Column(String, ForeignKey("conversations.id", ondelete="CASCADE"), nullable=False)
+    role = Column(String, nullable=False)      # "user" | "assistant"
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    conversation = relationship("Conversation", back_populates="messages")
+
+
 class MemoryEpisode(Base):
     __tablename__ = "memory_episodes"
 

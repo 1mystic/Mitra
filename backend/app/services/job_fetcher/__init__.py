@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ...database import AsyncSessionLocal
 from ...models.db import Opportunity
 from ...services import embedding_service
-from . import adzuna, internshala, unstop
+from . import adzuna, himalayas, internshala, remotive, unstop
 from .normalizer import FetchedJob
 
 logger = logging.getLogger(__name__)
@@ -39,6 +39,8 @@ async def run() -> dict:
             results = await asyncio.gather(
                 _safe("adzuna", adzuna.fetch),
                 _safe("internshala", internshala.fetch),
+                _safe("himalayas", himalayas.fetch),
+                _safe("remotive", remotive.fetch),
                 _safe("unstop", unstop.fetch),
             )
 

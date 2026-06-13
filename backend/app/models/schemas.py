@@ -57,7 +57,7 @@ class OpportunityRead(BaseModel):
     company: str
     location: Optional[str]
     description: Optional[str]
-    required_skills: list[str]
+    required_skills: list[str] = Field(default_factory=list)
     url: Optional[str]
     deadline: Optional[str]
     type: str
@@ -172,6 +172,48 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: "UserRead"
+
+
+# ── Chat History ─────────────────────────────────────────────────────────────
+
+class ConversationCreate(BaseModel):
+    user_id: str
+    title: Optional[str] = None
+
+
+class ConversationUpdate(BaseModel):
+    title: str
+
+
+class ChatHistoryMessageCreate(BaseModel):
+    conversation_id: str
+    role: str       # "user" | "assistant"
+    content: str
+
+
+class ChatHistoryMessageRead(BaseModel):
+    id: str
+    conversation_id: str
+    role: str
+    content: str
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class ConversationRead(BaseModel):
+    id: str
+    user_id: str
+    title: Optional[str]
+    created_at: datetime
+    updated_at: Optional[datetime]
+    message_count: int = 0
+
+    model_config = {"from_attributes": True}
+
+
+class ConversationWithMessages(ConversationRead):
+    messages: list[ChatHistoryMessageRead] = []
 
 
 # ── Chat ──────────────────────────────────────────────────────────────────────
