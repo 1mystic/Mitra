@@ -169,19 +169,30 @@ export default function OpportunitiesPage() {
                       {opp.stipend && <span className={styles.stipend}>{opp.stipend}</span>}
                       {opp.deadline && <span className={styles.deadline}>Due {opp.deadline}</span>}
                     </div>
-                    {opp.url && (
-                      <a
-                        href={opp.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`btn btn-dark ${styles.applyBtn}`}
+                    <div className={styles.oppCardActions}>
+                      <button
+                        className={`btn btn-ghost ${styles.checkGapsBtn}`}
+                        onClick={() => {
+                          const prompt = `Analyse my skill gaps for: ${opp.title} at ${opp.company}`;
+                          router.push(`/chat?prompt=${encodeURIComponent(prompt)}`);
+                        }}
                       >
-                        Apply
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M7 17L17 7M7 7h10v10"/>
-                        </svg>
-                      </a>
-                    )}
+                        Check gaps
+                      </button>
+                      {opp.url && (
+                        <a
+                          href={opp.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`btn btn-dark ${styles.applyBtn}`}
+                        >
+                          Apply
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M7 17L17 7M7 7h10v10"/>
+                          </svg>
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
               );

@@ -68,9 +68,10 @@
   text-decoration: none;
 }
 .active {
-  color: var(--text-1);
-  background: rgba(255,255,255,0.09);
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.08);
+  color: #AFC7E8;
+  background: rgba(175,199,232,0.10);
+  box-shadow: 0 0 0 1px rgba(175,199,232,0.18);
+  font-weight: 500;
 }
 
 /* Right side */

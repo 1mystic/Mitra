@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { chat, profile, auth as authApi, history as historyApi } from '@/lib/api';
 import { getToken, getUserId, removeToken } from '@/lib/auth';
 import type { SSEEvent, Opportunity, ConversationRead } from '@/lib/types';
@@ -119,8 +119,9 @@ function OppCard({ opp, onAction }: { opp: Opportunity; onAction: (prompt: strin
   );
 }
 
-export default function ChatPage() {
+function ChatPageInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [userId, setUserId] = useState<string | null>(null);
   const [userName, setUserName] = useState('');
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
@@ -163,6 +164,20 @@ export default function ChatPage() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  const autoSentRef = useRef(false);
+  useEffect(() => {
+    if (!userId || autoSentRef.current) return;
+    const promptParam = searchParams.get('prompt');
+    if (!promptParam) return;
+    autoSentRef.current = true;
+    const timer = setTimeout(() => {
+      sendMessage(promptParam);
+      router.replace('/chat');
+    }, 300);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, searchParams]);
 
   async function loadConversations(uid: string) {
     setHistoryLoading(true);
@@ -370,6 +385,7 @@ export default function ChatPage() {
   if (!userId) return null;
 
   const isEmpty = messages.length === 0;
+
 
   return (
     <div className={styles.layout}>
@@ -661,5 +677,13 @@ export default function ChatPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense fallback={null}>
+      <ChatPageInner />
+    </Suspense>
   );
 }

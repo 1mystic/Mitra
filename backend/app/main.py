@@ -7,11 +7,14 @@ if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 
-from .database import init_db
+from .database import init_db, AsyncSessionLocal
 from .routers import admin, auth, chat, history, opportunities, profile, tracker, users
 from . import scheduler
+from .services import embedding_service
 
 
 @asynccontextmanager
@@ -45,6 +48,29 @@ app.include_router(history.router)
 app.include_router(opportunities.router)
 app.include_router(tracker.router)
 app.include_router(chat.router)
+
+
+@app.get("/api/health")
+async def health():
+    db_status = "ok"
+    opportunity_count = 0
+    try:
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(text("SELECT COUNT(*) FROM opportunities"))
+            opportunity_count = result.scalar_one()
+    except Exception:
+        db_status = "error"
+
+    model_loaded = embedding_service._get_model.cache_info().currsize > 0
+
+    payload = {
+        "status": "ok" if db_status == "ok" else "error",
+        "db": db_status,
+        "opportunity_count": opportunity_count,
+        "embedding_model": "loaded" if model_loaded else "unloaded",
+    }
+    status_code = 503 if db_status == "error" else 200
+    return JSONResponse(content=payload, status_code=status_code)
 
 
 @app.get("/")

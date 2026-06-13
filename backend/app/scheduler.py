@@ -41,3 +41,21 @@ def stop() -> None:
     if _scheduler and _scheduler.running:
         _scheduler.shutdown(wait=False)
         logger.info("Job scheduler stopped")
+
+
+def is_running() -> bool:
+    return bool(_scheduler and _scheduler.running)
+
+
+def get_jobs() -> list[dict]:
+    if not _scheduler:
+        return []
+    return [
+        {
+            "id": job.id,
+            "name": job.name,
+            "next_run_time": job.next_run_time.isoformat() if job.next_run_time else None,
+            "trigger": str(job.trigger),
+        }
+        for job in _scheduler.get_jobs()
+    ]

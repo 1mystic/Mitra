@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qatalog Talent AI — Agentic Internship Engine</title>
+    <!-- Tailwind CSS for modern utility layout styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        obsidian: {
+                            DEFAULT: '#050507',
+                            surface: '#0C0D12',
+                            elevated: '#14161F',
+                            border: 'rgba(255, 255, 255, 0.08)',
+                            borderBright: 'rgba(255, 255, 255, 0.16)'
+                        },
+                        kinetic: {
+                          mint: '#A8D5C2',
+                          sky: '#AFC7E8',
+                          iris: '#C6B6E6'
+                      }
+                    }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        header: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+       body {
+    background: #07080B;
+    color: #F5F7FA;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+}
+
+/* ===== Premium Ambient Background ===== */
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(
+            circle at 15% 20%,
+            rgba(169,188,235,0.07),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 85% 25%,
+            rgba(195,177,225,0.06),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 50% 85%,
+            rgba(168,205,191,0.05),
+            transparent 40%
+        );
+    z-index: -1;
+}
+
+/* ===== Glass Surfaces ===== */
+
+.glass-panel {
+    background: rgba(23, 26, 34, 0.55);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    border: 1px solid rgba(255,255,255,0.08);
+
+    box-shadow:
+        0 8px 32px rgba(0,0,0,0.30),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+/* ===== Soft Radial Glows ===== */
+
+.glow-radial-primary {
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(169,188,235,0.10),
+            transparent 75%
+        );
+}
+
+.glow-radial-secondary {
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(195,177,225,0.10),
+            transparent 75%
+        );
+}
+
+.glow-radial-tertiary {
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(168,205,191,0.08),
+            transparent 75%
+        );
+}
+
+/* ===== Animated Premium Border ===== */
+
+.agent-border-pulse {
+    position: relative;
+    overflow: hidden;
+}
+
+.agent-border-pulse::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+
+    background:
+        linear-gradient(
+            120deg,
+            rgba(169,188,235,0.35),
+            rgba(195,177,225,0.25),
+            rgba(168,205,191,0.20)
+        );
+
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+
+    pointer-events: none;
+}
+
+.agent-border-pulse::after {
+    content: "";
+    position: absolute;
+    top: -150%;
+    left: -150%;
+    width: 300%;
+    height: 300%;
+
+    background:
+        conic-gradient(
+            from 0deg,
+            transparent,
+            rgba(255,255,255,0.04),
+            transparent
+        );
+
+    animation: premiumRotate 14s linear infinite;
+
+    pointer-events: none;
+}
+
+@keyframes premiumRotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ===== Hover States ===== */
+
+.premium-hover {
+    transition:
+        transform 0.35s ease,
+        border-color 0.35s ease,
+        box-shadow 0.35s ease;
+}
+
+.premium-hover:hover {
+    transform: translateY(-4px);
+
+    border-color: rgba(169,188,235,0.22);
+
+    box-shadow:
+        0 20px 50px rgba(0,0,0,0.30),
+        0 0 0 1px rgba(169,188,235,0.08);
+}
+
+/* ===== Typography ===== */
+
+.heading-gradient {
+    background:
+        linear-gradient(
+            135deg,
+            #F7F9FC,
+            #D8E1F2,
+            #C9B7E5
+        );
+
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.text-muted {
+    color: #8891A4;
+}
+
+/* ===== Scrollbar ===== */
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #07080B;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #252B38;
+    border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #394154;
+}
+    </style>
+</head>
+<body class="overflow-x-hidden antialiased">
+
+    <!-- Top Glow Spots -->
+    <div class="absolute top-0 left-1/4 w-[500px] h-[500px] glow-radial-teal pointer-events-none"></div>
+    <div class="absolute top-20 right-1/4 w-[500px] h-[500px] glow-radial-violet pointer-events-none"></div>
+
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-obsidian/80 border-b border-obsidian/10">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-kinetic-blue to-kinetic-teal flex items-center justify-center shadow-lg shadow-kinetic-teal/15">
+                    <span class="font-header font-extrabold text-obsidian text-sm">Q</span>
+                </div>
+                <span class="font-header font-bold text-lg tracking-tight">Qatalog <span class="text-xs font-mono font-medium px-1.5 py-0.5 rounded bg-kinetic-teal/10 text-kinetic-teal border border-kinetic-teal/20 ml-1">TALENT AI</span></span>
+            </div>
+            <nav class="hidden md:flex items-center gap-8 text-sm text-slate-400 font-medium">
+                <a href="#how-it-works" class="hover:text-white transition-colors">Agent Engine</a>
+                <a href="#bento-features" class="hover:text-white transition-colors">Capabilities</a>
+                <a href="#pricing" class="hover:text-white transition-colors">Pricing</a>
+                <a href="#component-library" class="text-kinetic-teal hover:underline transition-all">UI Playground</a>
+            </nav>
+            <div class="flex items-center gap-4">
+                <button class="text-sm font-medium hover:text-white transition-colors text-slate-300">Log In</button>
+                <a href="#agent-playground" class="px-4 py-2 rounded-lg bg-white text-obsidian text-sm font-semibold hover:bg-slate-200 transition-all shadow-sm">
+                    Activate Agent
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="relative">
+        
+        <!-- Hero Section -->
+        <section class="max-w-7xl mx-auto px-6 pt-20 pb-16 text-center relative z-10">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-obsidian-surface border border-obsidian-border mb-8">
+                <span class="flex h-2 w-2 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-kinetic-teal opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-kinetic-teal"></span>
+                </span>
+                <span class="text-xs font-mono text-slate-300">Engine V3.0 — Calibrated for 2026 Hiring Frameworks</span>
+            </div>
+            
+            <h1 class="font-header font-extrabold text-4xl sm:text-6xl md:text-7xl tracking-tight leading-[1.1] max-w-5xl mx-auto">
+                Autonomous AI Agents to <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-slate-400">Secure Your Next Internship</span>
+            </h1>
+            
+            <p class="mt-6 text-lg text-slate-400 max-w-2xl mx-auto font-light leading-relaxed">
+                Qatalog isn't a job board. It's a persistent agentic system that continuously optimizes your resume, runs native interview practice sessions, and applies autonomously on your behalf.
+            </p>
+
+            <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="#agent-playground" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-kinetic-blue to-kinetic-teal text-obsidian font-bold hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-lg shadow-kinetic-blue/10">
+                    Deploy Hiring Agent
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </a>
+                <a href="#how-it-works" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-obsidian-surface border border-obsidian-border text-slate-300 hover:text-white hover:bg-obsidian-elevated transition-all font-medium">
+                    See How Agent Executes
+                </a>
+            </div>
+        </section>
+
+        <!-- Interactive Agent Live Sandbox Section -->
+        <section id="agent-playground" class="max-w-5xl mx-auto px-6 py-12 relative z-10">
+            <div class="p-6 md:p-8 rounded-2xl bg-obsidian-surface border border-obsidian-border shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 glow-radial-teal pointer-events-none opacity-50"></div>
+                
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-obsidian-border pb-6 mb-6">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded bg-kinetic-blue/15 text-kinetic-blue text-xs font-mono font-semibold border border-kinetic-blue/20">LIVE ENGINE SIMULATOR</span>
+                            <span class="text-xs text-slate-500 font-mono">ID: QT-9082</span>
+                        </div>
+                        <h3 class="font-header font-bold text-xl mt-1">Autonomous Hunt Agent</h3>
+                    </div>
+                    
+                    <button id="btn-trigger-agent" class="px-5 py-2.5 rounded-lg bg-kinetic-teal text-obsidian font-bold text-sm hover:scale-[1.02] transition-all flex items-center gap-2">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        Deploy Search Agent
+                    </button>
+                </div>
+
+                <!-- Simulation Visual Board -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Left Column: Input Panel -->
+                    <div class="space-y-4">
+                        <label class="block text-xs font-mono text-slate-400 uppercase tracking-wider">Candidate Parameters</label>
+                        <div>
+                            <label class="block text-xs text-slate-500 mb-1">Target Role</label>
+                            <select id="sim-role" class="w-full px-3 py-2 bg-obsidian-elevated border border-obsidian-border rounded-lg text-sm text-slate-200 focus:outline-none focus:border-kinetic-teal">
+                                <option value="Frontend Engineer Intern">Frontend Engineer Intern</option>
+                                <option value="AI / Robotics Intern">AI / Robotics Intern</option>
+                                <option value="Product Design Intern">Product Design Intern</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-500 mb-1">Location Strategy</label>
+                            <input type="text" value="San Francisco / Remote" class="w-full px-3 py-2 bg-obsidian-elevated border border-obsidian-border rounded-lg text-sm text-slate-200 focus:outline-none focus:border-kinetic-teal" disabled>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-500 mb-1">Skill Alignment Engine</label>
+                            <div class="p-3 bg-obsidian-elevated/40 rounded-lg border border-obsidian-border flex items-center justify-between">
+                                <span class="text-xs font-mono text-slate-400">Match Accuracy Minimum</span>
+                                <span class="text-xs font-mono font-bold text-kinetic-teal">85%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Visual Console Output -->
+                    <div class="lg:col-span-2 flex flex-col justify-between p-4 rounded-xl bg-[#07080b] border border-obsidian-border font-mono text-xs">
+                        <div>
+                            <div class="flex items-center justify-between text-[10px] text-slate-500 border-b border-obsidian-border/50 pb-2 mb-3">
+                                <span>AGENT WORKFLOW PIPELINE</span>
+                                <span id="agent-status-tag" class="text-slate-500">SYSTEM IDLE</span>
+                            </div>
+                            
+                            <!-- Steps stack -->
+                            <div class="space-y-3.5" id="agent-steps-container">
+                                <div class="flex items-center gap-3 opacity-40 transition-opacity duration-300" id="step-1">
+                                    <span class="w-5 h-5 rounded-full flex items-center justify-center border border-slate-700 text-[10px]" id="step-num-1">1</span>
+                                    <span class="text-slate-300">Parse profile metadata & compile tailored portfolio version</span>
+                                </div>
+                                <div class="flex items-center gap-3 opacity-40 transition-opacity duration-300" id="step-2">
+                                    <span class="w-5 h-5 rounded-full flex items-center justify-center border border-slate-700 text-[10px]" id="step-num-2">2</span>
+                                    <span class="text-slate-300">Crawl direct corporate API endpoints & verify internship posts</span>
+                                </div>
+                                <div class="flex items-center gap-3 opacity-40 transition-opacity duration-300" id="step-3">
+                                    <span class="w-5 h-5 rounded-full flex items-center justify-center border border-slate-700 text-[10px]" id="step-num-3">3</span>
+                                    <span class="text-slate-300">Compute match vectors & run automated pipeline cover-letter match</span>
+                                </div>
+                                <div class="flex items-center gap-3 opacity-40 transition-opacity duration-300" id="step-4">
+                                    <span class="w-5 h-5 rounded-full flex items-center justify-center border border-slate-700 text-[10px]" id="step-num-4">4</span>
+                                    <span class="text-slate-300">Draft personalized introduction & prepare secure direct sandbox route</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Console Readout -->
+                        <div class="mt-4 pt-4 border-t border-obsidian-border/50 text-[11px] text-slate-400 h-10 flex items-center">
+                            <span class="text-kinetic-teal mr-2">&gt;</span> <span id="agent-console-text">Ready to deploy. Tap the action button to simulate autonomous tasks.</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Bento Features Grid Section -->
+        <section id="bento-features" class="max-w-7xl mx-auto px-6 py-20 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="font-header font-extrabold text-3xl sm:text-5xl tracking-tight">Everything you need, built natively.</h2>
+                <p class="mt-4 text-slate-400 max-w-xl mx-auto">No generic AI layers. We integrated individual micro-agents designed specifically to fasttrack technical and non-technical internship pipelines.</p>
+            </div>
+
+            <!-- Bento Layout -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <!-- Card 1: 2/3 width feature -->
+                <div class="md:col-span-2 p-8 rounded-2xl bg-obsidian-surface border border-obsidian-border hover:border-kinetic-teal/30 transition-all group flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-80 h-80 glow-radial-teal pointer-events-none opacity-30 group-hover:opacity-50 transition-all"></div>
+                    <div>
+                        <span class="text-xs font-mono text-kinetic-teal font-semibold">AUTOMATED DISCOVERY</span>
+                        <h3 class="font-header font-bold text-2xl mt-2 mb-4">Direct Endpoint Parsing</h3>
+                        <p class="text-slate-400 max-w-lg font-light leading-relaxed text-sm">
+                            Our agent crawls companies at the ATS (Applicant Tracking System) API level rather than looking at standard HTML job aggregators. This surfaces verified opportunities up to 72 hours before they are indexed on public job boards.
+                        </p>
+                    </div>
+                    <div class="mt-8 pt-6 border-t border-obsidian-border flex items-center justify-between text-xs text-slate-500 font-mono">
+                        <span>API Pipelines Connected: 4,500+</span>
+                        <span class="text-white group-hover:translate-x-1 transition-transform">Explore dynamic search &rarr;</span>
+                    </div>
+                </div>
+
+                <!-- Card 2: 1/3 width feature (Resume) -->
+                <div class="p-8 rounded-2xl bg-obsidian-surface border border-obsidian-border hover:border-kinetic-violet/30 transition-all group flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-64 h-64 glow-radial-violet pointer-events-none opacity-30 group-hover:opacity-50 transition-all"></div>
+                    <div>
+                        <span class="text-xs font-mono text-kinetic-violet font-semibold text-violet-400">OPTIMIZATION ENGINE</span>
+                        <h3 class="font-header font-bold text-2xl mt-2 mb-4">Skill Sandbox</h3>
+                        <p class="text-slate-400 font-light leading-relaxed text-sm">
+                            Tailor and polish resumes based on real-time feedback vectors. Know which skills to pick up next to match specialized requirements.
+                        </p>
+                    </div>
+                    <div class="mt-8">
+                        <!-- Dynamic Match Meter Interaction (Preview) -->
+                        <div class="p-3 bg-obsidian-elevated rounded-lg border border-obsidian-border">
+                            <div class="flex justify-between text-xs font-mono mb-1">
+                                <span class="text-slate-400">Dynamic Matching Vector</span>
+                                <span class="text-kinetic-violet font-bold">94%</span>
+                            </div>
+                            <div class="w-full bg-obsidian-surface rounded-full h-1.5 overflow-hidden">
+                                <div class="bg-gradient-to-r from-kinetic-blue to-kinetic-violet h-1.5 rounded-full" style="width: 94%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: 1/3 width (Practice Arena) -->
+                <div class="p-8 rounded-2xl bg-obsidian-surface border border-obsidian-border hover:border-kinetic-blue/30 transition-all group flex flex-col justify-between">
+                    <div>
+                        <span class="text-xs font-mono text-kinetic-blue font-semibold">INTERACTIVE PREPARATION</span>
+                        <h3 class="font-header font-bold text-xl mt-2 mb-3">AI Interview Arena</h3>
+                        <p class="text-slate-400 font-light leading-relaxed text-sm">
+                            Test your domain logic directly inside our secure terminal dashboard. Practice coding problems or behavioral responses with a generative supervisor model.
+                        </p>
+                    </div>
+                    <div class="mt-6 flex items-center gap-2">
+                        <span class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-xs font-mono">System-led Audio Practice</span>
+                        <span class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-xs font-mono">Instant Score</span>
+                    </div>
+                </div>
+
+                <!-- Card 4: 2/3 width (Candidate pipelines) -->
+                <div class="md:col-span-2 p-8 rounded-2xl bg-obsidian-surface border border-obsidian-border hover:border-kinetic-teal/30 transition-all group flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-80 h-80 glow-radial-teal pointer-events-none opacity-20"></div>
+                    <div>
+                        <span class="text-xs font-mono text-kinetic-teal font-semibold">DIRECT ROUTING</span>
+                        <h3 class="font-header font-bold text-2xl mt-2 mb-4">Direct-To-Hiring Manager Pipeline</h3>
+                        <p class="text-slate-400 font-light leading-relaxed text-sm">
+                            When our agent verifies an extremely strong alignment matrix (>90% compliance with corporate targets), your application is securely piped directly onto team lead review pools, avoiding basic screening queues.
+                        </p>
+                    </div>
+                    <div class="mt-6 grid grid-cols-3 gap-4 pt-6 border-t border-obsidian-border text-center">
+                        <div>
+                            <div class="font-header font-bold text-lg text-white">4.8 Days</div>
+                            <div class="text-[10px] text-slate-500 font-mono">AVERAGE MATCH SPEED</div>
+                        </div>
+                        <div>
+                            <div class="font-header font-bold text-lg text-white">3,200+</div>
+                            <div class="text-[10px] text-slate-500 font-mono">INTERNS PLACED</div>
+                        </div>
+                        <div>
+                            <div class="font-header font-bold text-lg text-white">92.4%</div>
+                            <div class="text-[10px] text-slate-500 font-mono">INTERVIEW ADVANCEMENT</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Pricing Tiers Section -->
+        <section id="pricing" class="max-w-7xl mx-auto px-6 py-16 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="font-header font-extrabold text-3xl sm:text-5xl tracking-tight">Flexible Plans for Every Stage</h2>
+                <p class="mt-4 text-slate-400 max-w-xl mx-auto">Get absolute support finding your first placement, with plans built to grow alongside your professional path.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Tier 1: Free Starter -->
+                <div class="p-8 rounded-2xl bg-obsidian-surface border border-obsidian-border flex flex-col justify-between relative">
+                    <div>
+                        <span class="text-xs font-mono text-slate-400">ACADEMIC STARTER</span>
+                        <h4 class="font-header font-bold text-2xl mt-2">Free</h4>
+                        <p class="text-slate-400 text-sm mt-3 font-light">Explore autonomous agent features and optimize profiles.</p>
+                        
+                        <ul class="mt-6 space-y-3.5 text-sm text-slate-300">
+                            <li class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-kinetic-teal shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                                <span>3 Parallel Agent Hunt Tracks</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-kinetic-teal shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                                <span>Complete Skill Gap Optimizer</span>
+                            </li>
+                            <li class="flex items-center gap-2 text-slate-500">
+                                <svg class="w-4 h-4 text-slate-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                <span>Direct-To-Hiring Pipelines</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <button class="w-full mt-8 py-3 rounded-xl bg-obsidian-elevated border border-obsidian-border text-white text-sm font-semibold hover:bg-slate-800 transition-all">
+                        Activate Free Agent
+                    </button>
+                </div>
+
+                <!-- Tier 2: Premium Professional (Highlighted Agentic Choice) -->
+                <div class="p-8 rounded-2xl bg-[#090b10] border border-kinetic-teal/30 flex flex-col justify-between relative shadow-lg shadow-kinetic-teal/5">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-to-r from-kinetic-blue to-kinetic-teal text-obsidian text-[10px] font-mono font-extrabold uppercase rounded-full">
+                        RECOMMENDED DEPLOYMENT
+                    </div>
+                    <div>
+                        <span class="text-xs font-mono text-kinetic-teal">KINETIC DISCOVERY</span>
+                        <h4 class="font-header font-bold text-2xl mt-2">$19<span class="text-sm font-light text-slate-400">/mo</span></h4>
+                        <p class="text-slate-300 text-sm mt-3 font-light">Unlimited active agent hunts with continuous background execution.</p>
+                        
+                        <ul class="mt-6 space-y-3.5 text-sm text-slate-200">
+                            <li class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-kinetic-teal shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                                <span>Unlimited Active Agent Searches</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-kinetic-teal shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                                <span>Custom Resume Variant Compilation</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-kinetic-teal shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                                <span class="font-semibold text-white">Direct ATS Sandbox Delivery</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <button class="w-full mt-8 py-3 rounded-xl bg-gradient-to-r from-kinetic-blue to-kinetic-teal text-obsidian text-sm font-extrabold hover:brightness-110 transition-all">
+                        Deploy Elite Track
+                    </button>
+                </div>
+
+                <!-- Tier 3: Cohort Partnership -->
+                <div class="p-8 rounded-2xl bg-obsidian-surface border border-obsidian-border flex flex-col justify-between relative">
+                    <div>
+                        <span class="text-xs font-mono text-kinetic-violet">UNIVERSITY / PARTNER</span>
+                        <h4 class="font-header font-bold text-2xl mt-2">Enterprise</h4>
+                        <p class="text-slate-400 text-sm mt-3 font-light">Dedicated spaces for universities, career cohorts, and bootcamps.</p>
+                        
+                        <ul class="mt-6 space-y-3.5 text-sm text-slate-300">
+                            <li class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-kinetic-teal shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                                <span>Batch Placement Dashboard</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-kinetic-teal shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                                <span>Custom Skills Matrix Analysis</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-kinetic-teal shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                                <span>Corporate Match Verification</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <button class="w-full mt-8 py-3 rounded-xl bg-obsidian-elevated border border-obsidian-border text-white text-sm font-semibold hover:bg-slate-800 transition-all">
+                        Inquire Custom Pipeline
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dynamic Brand Footer -->
+        <footer class="border-t border-obsidian-border bg-obsidian-surface/30">
+            <div class="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 rounded bg-gradient-to-tr from-kinetic-blue to-kinetic-teal flex items-center justify-center">
+                            <span class="font-header font-bold text-obsidian text-xs">Q</span>
+                        </div>
+                        <span class="font-header font-bold text-sm">Qatalog Talent AI</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 font-mono mt-1">&copy; 2026 Qatalog Technologies Inc. All rights reserved.</p>
+                </div>
+                <div class="flex gap-6 text-xs text-slate-400 font-mono">
+                    <a href="#component-library" class="text-kinetic-teal hover:underline">Interactive UI Playground</a>
+                    <a href="#" class="hover:text-white">API Core</a>
+                    <a href="#" class="hover:text-white">Safety Engine</a>
+                </div>
+            </div>
+        </footer>
+
+        <!-- ========================================================== -->
+        <!-- PART 3: FRONTEND UI COMPONENT PLAYGROUND & COMPONENT LIBRARY -->
+        <!-- ========================================================== -->
+        <section id="component-library" class="border-t border-obsidian-border bg-[#07080b] py-20 relative z-20">
+            <div class="max-w-7xl mx-auto px-6">
+                
+                <!-- Section Header -->
+                <div class="border-b border-obsidian-border pb-8 mb-12">
+                    <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-kinetic-teal/10 text-kinetic-teal text-xs font-mono font-bold border border-kinetic-teal/20 mb-3">
+                        DESIGN SYSTEM SPEC
+                    </div>
+                    <h2 class="font-header font-extrabold text-3xl sm:text-4xl">Micro-Frontend Component Library</h2>
+                    <p class="text-slate-400 mt-2 text-sm font-light">Interactive production-ready component blocks for Qatalog 2026 agentic frontends.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    
+                    <!-- Left Section: Interactive Sandboxes -->
+                    <div class="space-y-12">
+                        
+                        <!-- UI Component Category: Action & Buttons -->
+                        <div>
+                            <h4 class="font-mono text-xs text-slate-500 uppercase tracking-widest mb-6">01 / Buttons & Interactive Triggers</h4>
+                            <div class="p-6 rounded-xl bg-obsidian-surface border border-obsidian-border flex flex-wrap gap-4 items-center">
+                                <!-- Kinetic Action Primary -->
+                                <button class="px-4 py-2 rounded-lg bg-gradient-to-r from-kinetic-blue to-kinetic-teal text-obsidian font-bold text-xs hover:scale-[1.02] transition-transform shadow-md shadow-kinetic-blue/10">
+                                    Primary Action
+                                </button>
+                                
+                                <!-- Kinetic Action Muted / Glow Outline -->
+                                <button class="px-4 py-2 rounded-lg bg-obsidian-surface border border-kinetic-teal/40 text-kinetic-teal font-semibold text-xs hover:bg-kinetic-teal/10 transition-colors">
+                                    Agent Trigger
+                                </button>
+
+                                <!-- Standard Muted Action -->
+                                <button class="px-4 py-2 rounded-lg bg-obsidian-elevated border border-obsidian-border text-slate-300 font-medium text-xs hover:text-white hover:bg-slate-800 transition-colors">
+                                    Secondary View
+                                </button>
+
+                                <!-- Iconic Indicator Button -->
+                                <button class="w-10 h-10 rounded-lg bg-obsidian-elevated border border-obsidian-border flex items-center justify-center text-slate-400 hover:text-white transition-colors">
+                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- UI Component Category: Live Skill Optimizer Widget (Interactive JS Widget) -->
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="font-mono text-xs text-slate-500 uppercase tracking-widest">02 / Dynamic Skills Simulator</h4>
+                                <span class="text-[10px] font-mono text-kinetic-teal">INTERACTIVE</span>
+                            </div>
+                            <div class="p-6 rounded-xl bg-obsidian-surface border border-obsidian-border">
+                                <p class="text-xs text-slate-400 mb-4 font-light">Toggle active project alignments and dynamically watch compliance vectors update.</p>
+                                
+                                <!-- Toggle Grid -->
+                                <div class="grid grid-cols-2 gap-3 mb-6">
+                                    <button onclick="toggleAlignSkill('node', 12)" class="skill-pill-btn p-2.5 rounded-lg border border-obsidian-border bg-obsidian-elevated/40 text-left transition-all hover:border-slate-500">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-mono text-slate-300">Node.js Pipelines</span>
+                                            <span class="text-[10px] text-kinetic-teal font-bold">+12%</span>
+                                        </div>
+                                    </button>
+                                    <button onclick="toggleAlignSkill('react', 8)" class="skill-pill-btn p-2.5 rounded-lg border border-obsidian-border bg-obsidian-elevated/40 text-left transition-all hover:border-slate-500">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-mono text-slate-300">React Core Hooking</span>
+                                            <span class="text-[10px] text-kinetic-teal font-bold">+8%</span>
+                                        </div>
+                                    </button>
+                                    <button onclick="toggleAlignSkill('vector', 15)" class="skill-pill-btn p-2.5 rounded-lg border border-obsidian-border bg-obsidian-elevated/40 text-left transition-all hover:border-slate-500">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-mono text-slate-300">Vector Embeddings</span>
+                                            <span class="text-[10px] text-kinetic-teal font-bold">+15%</span>
+                                        </div>
+                                    </button>
+                                    <button onclick="toggleAlignSkill('docker', 10)" class="skill-pill-btn p-2.5 rounded-lg border border-obsidian-border bg-obsidian-elevated/40 text-left transition-all hover:border-slate-500">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-mono text-slate-300">Docker Sandbox</span>
+                                            <span class="text-[10px] text-kinetic-teal font-bold">+10%</span>
+                                        </div>
+                                    </button>
+                                </div>
+
+                                <!-- Output Bar -->
+                                <div class="p-3.5 bg-obsidian-elevated/80 rounded-lg border border-obsidian-border flex items-center justify-between">
+                                    <div>
+                                        <div class="text-[10px] text-slate-500 font-mono">SIMULATED HIT VECTOR</div>
+                                        <div id="compliance-total-value" class="font-header font-bold text-lg text-white">55% Matching</div>
+                                    </div>
+                                    <div class="w-32 bg-obsidian-surface h-2 rounded-full overflow-hidden">
+                                        <div id="compliance-bar-fill" class="bg-gradient-to-r from-kinetic-blue to-kinetic-teal h-2 rounded-full transition-all duration-300" style="width: 55%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- UI Component Category: Form Inputs & Fields -->
+                        <div>
+                            <h4 class="font-mono text-xs text-slate-500 uppercase tracking-widest mb-6">03 / Form Elements & Input States</h4>
+                            <div class="p-6 rounded-xl bg-obsidian-surface border border-obsidian-border space-y-4">
+                                <div>
+                                    <label class="block text-[11px] font-mono text-slate-500 mb-1.5 uppercase">Agent Key Identifier</label>
+                                    <input type="text" placeholder="q_key_9082...19" class="w-full px-3 py-2 bg-obsidian-elevated border border-obsidian-border rounded-lg text-xs font-mono text-slate-200 focus:outline-none focus:border-kinetic-teal placeholder-slate-600">
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-obsidian-elevated rounded-lg border border-obsidian-border">
+                                    <div>
+                                        <span class="text-xs font-medium text-slate-200 block">Agent Execution Notifications</span>
+                                        <span class="text-[10px] text-slate-500 block">Dispatch system logs straight to your workspace inbox</span>
+                                    </div>
+                                    <!-- Dynamic Toggle Switch component -->
+                                    <button id="toggle-switch-demo" onclick="this.classList.toggle('bg-kinetic-teal'); this.querySelector('div').classList.toggle('translate-x-5');" class="w-10 h-5 rounded-full bg-slate-800 p-0.5 transition-colors relative flex items-center shrink-0">
+                                        <div class="w-4 h-4 rounded-full bg-white transition-transform transform"></div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Right Section: State Indicators, Logs, Metrics, Status Badges -->
+                    <div class="space-y-12">
+                        
+                        <!-- UI Component Category: Status Indicators & Badges -->
+                        <div>
+                            <h4 class="font-mono text-xs text-slate-500 uppercase tracking-widest mb-6">04 / Dynamic Agent State Indicators</h4>
+                            <div class="p-6 rounded-xl bg-obsidian-surface border border-obsidian-border flex flex-wrap gap-3">
+                                <span class="px-2.5 py-1 rounded bg-kinetic-teal/10 text-kinetic-teal text-xs font-mono border border-kinetic-teal/20 flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-kinetic-teal animate-pulse"></span>
+                                    Agent Active
+                                </span>
+                                <span class="px-2.5 py-1 rounded bg-yellow-500/10 text-yellow-500 text-xs font-mono border border-yellow-500/20 flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
+                                    Evaluating Pipeline
+                                </span>
+                                <span class="px-2.5 py-1 rounded bg-kinetic-blue/10 text-kinetic-blue text-xs font-mono border border-kinetic-blue/20 flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-kinetic-blue"></span>
+                                    System Verification
+                                </span>
+                                <span class="px-2.5 py-1 rounded bg-slate-800 text-slate-400 text-xs font-mono border border-obsidian-border flex items-center gap-1.5">
+                                    Idle Mode
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- UI Component Category: Dynamic Feed / Audio Interactive Waveform component -->
+                        <div>
+                            <h4 class="font-mono text-xs text-slate-500 uppercase tracking-widest mb-6">05 / Generative Voice Evaluation Waves</h4>
+                            <div class="p-6 rounded-xl bg-obsidian-surface border border-obsidian-border">
+                                <div class="flex items-center justify-between text-xs font-mono mb-3 text-slate-400">
+                                    <span>AUDIO TIMELINE INTERACTION</span>
+                                    <span class="text-kinetic-teal">LIVE SPEECH TRACK</span>
+                                </div>
+                                
+                                <div class="h-16 flex items-end justify-between gap-[3px] bg-obsidian-elevated/40 p-4 rounded-lg border border-obsidian-border">
+                                    <div class="w-[4px] bg-kinetic-teal h-6 animate-pulse"></div>
+                                    <div class="w-[4px] bg-kinetic-blue h-12"></div>
+                                    <div class="w-[4px] bg-kinetic-blue h-10"></div>
+                                    <div class="w-[4px] bg-kinetic-teal h-8"></div>
+                                    <div class="w-[4px] bg-kinetic-teal h-14"></div>
+                                    <div class="w-[4px] bg-kinetic-blue h-4"></div>
+                                    <div class="w-[4px] bg-kinetic-teal h-10"></div>
+                                    <div class="w-[4px] bg-kinetic-blue h-14"></div>
+                                    <div class="w-[4px] bg-kinetic-teal h-6"></div>
+                                    <div class="w-[4px] bg-kinetic-blue h-12"></div>
+                                    <div class="w-[4px] bg-kinetic-teal h-8"></div>
+                                    <div class="w-[4px] bg-kinetic-blue h-14"></div>
+                                    <div class="w-[4px] bg-kinetic-teal h-10 animate-pulse"></div>
+                                </div>
+
+                                <div class="flex items-center justify-between mt-3 text-[11px] text-slate-500 font-mono">
+                                    <span>Total Session: 04:32 min</span>
+                                    <span>AI Score: 98.2 / Excellent</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- UI Component Category: Contextual Metadata Card -->
+                        <div>
+                            <h4 class="font-mono text-xs text-slate-500 uppercase tracking-widest mb-6">06 / Metadata Cards & Metrics</h4>
+                            <div class="p-6 rounded-xl bg-obsidian-surface border border-obsidian-border">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded bg-obsidian-elevated border border-obsidian-border flex items-center justify-center text-kinetic-teal">
+                                        <!-- Code block symbol svg -->
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                                    </div>
+                                    <div>
+                                        <span class="text-xs font-semibold text-white block">React Pipeline Challenge</span>
+                                        <span class="text-[10px] text-slate-500 block font-mono">VERIFIED BY QATALOG CORE ENGINE</span>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-obsidian-border">
+                                    <div>
+                                        <span class="text-[10px] text-slate-500 font-mono block">RUNNING SCORE</span>
+                                        <span class="text-sm font-bold text-slate-200">920 XP / High Tier</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] text-slate-500 font-mono block">ESTIMATED COMPLETION</span>
+                                        <span class="text-sm font-bold text-slate-200">12 minutes left</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Script handling dynamic engine simulations -->
+    <script>
+        // Sandbox simulator variables
+        let steps = [
+            { id: "step-1", text: "Parse profile metadata & compile tailored portfolio version", console: "Compiling unique candidate portfolio asset variants..." },
+            { id: "step-2", text: "Crawl direct corporate API endpoints & verify internship posts", console: "Direct API verification on corporate ATS completed: 4 matches found." },
+            { id: "step-3", text: "Compute match vectors & run automated pipeline cover-letter match", console: "Validating custom introduction cover-letter. Alignment index: 94.2%." },
+            { id: "step-4", text: "Draft personalized introduction & prepare secure direct sandbox route", console: "Draft compiled. Preparing direct secure delivery pipelines." }
+        ];
+
+        let triggerBtn = document.getElementById("btn-trigger-agent");
+        let statusTag = document.getElementById("agent-status-tag");
+        let consoleText = document.getElementById("agent-console-text");
+
+        triggerBtn.addEventListener("click", () => {
+            // Reset active states
+            steps.forEach(step => {
+                let el = document.getElementById(step.id);
+                let num = document.getElementById("step-num-" + step.id.split("-")[1]);
+                el.style.opacity = "0.4";
+                num.style.backgroundColor = "transparent";
+                num.style.color = "inherit";
+                num.style.borderColor = "#334155";
+            });
+
+            triggerBtn.disabled = true;
+            triggerBtn.innerText = "Processing Pipeline...";
+            statusTag.innerText = "AGENT RUNNING";
+            statusTag.className = "text-kinetic-teal animate-pulse";
+
+            let delay = 1000;
+            steps.forEach((step, index) => {
+                setTimeout(() => {
+                    let el = document.getElementById(step.id);
+                    let num = document.getElementById("step-num-" + step.id.split("-")[1]);
+                    el.style.opacity = "1";
+                    num.style.backgroundColor = "#00F5D4";
+                    num.style.color = "#050507";
+                    num.style.borderColor = "#00F5D4";
+                    consoleText.innerText = step.console;
+                    
+                    if(index === steps.length - 1) {
+                        setTimeout(() => {
+                            statusTag.innerText = "TASK DISPATCHED";
+                            statusTag.className = "text-kinetic-blue font-bold";
+                            consoleText.innerText = "System successfully completed autonomous deployment on active tracks.";
+                            triggerBtn.disabled = false;
+                            triggerBtn.innerText = "Deploy Search Agent";
+                        }, 1200);
+                    }
+                }, delay * (index + 1));
+            });
+        });
+
+        // Interactive dynamic compliance skill vectors
+        let currentAlignmentScore = 55;
+        let selectedSkills = {
+            node: false,
+            react: false,
+            vector: false,
+            docker: false
+        };
+
+        function toggleAlignSkill(skill, value) {
+            let pills = document.getElementsByClassName("skill-pill-btn");
+            // Match click state
+            selectedSkills[skill] = !selectedSkills[skill];
+            
+            if (selectedSkills[skill]) {
+                currentAlignmentScore += value;
+            } else {
+                currentAlignmentScore -= value;
+            }
+
+            // Cap matching limits
+            if(currentAlignmentScore > 100) currentAlignmentScore = 100;
+            if(currentAlignmentScore < 55) currentAlignmentScore = 55;
+
+            // Update UI components
+            document.getElementById("compliance-total-value").innerText = currentAlignmentScore + "% Matching";
+            document.getElementById("compliance-bar-fill").style.width = currentAlignmentScore + "%";
+            
+            // Event target highlight updates
+            let eventTarget = window.event.currentTarget;
+            if(selectedSkills[skill]) {
+                eventTarget.style.borderColor = "#00F5D4";
+                eventTarget.style.backgroundColor = "rgba(0, 245, 212, 0.05)";
+            } else {
+                eventTarget.style.borderColor = "rgba(255, 255, 255, 0.08)";
+                eventTarget.style.backgroundColor = "rgba(20, 22, 31, 0.4)";
+            }
+        }
+    </script>
+</body>
+</html>

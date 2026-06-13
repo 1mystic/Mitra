@@ -25,6 +25,17 @@ _QUERIES = [
     "deep learning intern",
 ]
 
+_ML_KEYWORDS = {
+    "machine learning", "ml", "deep learning", "nlp", "computer vision",
+    "data science", " ai ", "llm", "pytorch", "tensorflow", "keras",
+    "artificial intelligence", "neural", "intern",
+}
+
+
+def _is_ml_relevant(title: str, description: str) -> bool:
+    text = (title + " " + description).lower()
+    return any(kw in text for kw in _ML_KEYWORDS)
+
 _HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; MitraBot/1.0)",
     "Accept": "application/json",
@@ -48,8 +59,9 @@ async def fetch() -> list[FetchedJob]:
                 for item in items:
                     job = _parse(item)
                     if job and job.external_id not in seen:
-                        seen.add(job.external_id)
-                        jobs.append(job)
+                        if _is_ml_relevant(job.title, job.description or ""):
+                            seen.add(job.external_id)
+                            jobs.append(job)
 
             except Exception as exc:
                 logger.warning("Himalayas query '%s' failed: %s", query, exc)

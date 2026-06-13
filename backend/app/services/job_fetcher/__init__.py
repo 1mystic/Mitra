@@ -56,8 +56,10 @@ async def run() -> dict:
             stats["fetched"] = len(all_jobs)
             stats["upserted"] = await _upsert_all(db, all_jobs)
             stats["pruned"] = await _prune_stale(db)
+            stats["source_counts"] = await _source_counts(db)
 
             logger.info("Job refresh complete: %s", stats)
+            logger.info("Source distribution: %s", stats["source_counts"])
         except Exception as exc:
             logger.error("Job refresh top-level error: %s", exc)
             stats["errors"].append(str(exc))
@@ -125,6 +127,13 @@ async def _upsert_all(db: AsyncSession, jobs: list[FetchedJob]) -> int:
 
     await db.commit()
     return count
+
+
+async def _source_counts(db: AsyncSession) -> dict:
+    result = await db.execute(
+        text("SELECT COALESCE(source, 'manual') AS src, COUNT(*) FROM opportunities GROUP BY src ORDER BY src")
+    )
+    return {row[0]: row[1] for row in result.fetchall()}
 
 
 async def _prune_stale(db: AsyncSession) -> int:

@@ -265,11 +265,11 @@
 .formActions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
 
 /* Status badge colors */
-.statusWishlist    { background: rgba(255,255,255,0.06); color: var(--text-3); border: 1px solid var(--line); }
-.statusApplied     { background: var(--accent-dim);    color: var(--accent);  border: 1px solid var(--accent-line); }
-.statusInterviewing{ background: var(--amber-dim);     color: var(--amber);   border: 1px solid rgba(245,158,11,0.2); }
-.statusOffer       { background: var(--green-dim);     color: var(--green);   border: 1px solid rgba(63,185,80,0.2); }
-.statusRejected    { background: var(--red-dim);       color: var(--red);     border: 1px solid rgba(239,68,68,0.2); }
+.statusWishlist     { background: rgba(255,255,255,0.05); color: #8891a4;  border: 1px solid rgba(255,255,255,0.08); }
+.statusApplied      { background: rgba(175,199,232,0.12); color: #AFC7E8;  border: 1px solid rgba(175,199,232,0.25); }
+.statusInterviewing { background: rgba(245,158,11,0.12);  color: #f59e0b;  border: 1px solid rgba(245,158,11,0.25); }
+.statusOffer        { background: rgba(168,213,194,0.14);  color: #A8D5C2;  border: 1px solid rgba(168,213,194,0.28); }
+.statusRejected     { background: rgba(239,68,68,0.12);   color: #f87171;  border: 1px solid rgba(239,68,68,0.25); }
 
 @media (max-width: 1100px) { .kanban { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 720px)  { .kanban { grid-template-columns: repeat(2, 1fr); } }

@@ -8,6 +8,8 @@ POST /api/chat/stream    → Server-Sent Events (text/event-stream)
 from __future__ import annotations
 
 import json
+import time
+from collections import deque
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
@@ -22,6 +24,17 @@ from ..models.schemas import ChatRequest, ChatResponse
 from ..services import memory_service
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
+
+# user_id → deque of request timestamps (maxlen=10 enforces sliding window)
+_rate_limit: dict[str, deque] = {}
+
+
+def _enforce_rate_limit(user_id: str) -> None:
+    now = time.time()
+    bucket = _rate_limit.setdefault(user_id, deque(maxlen=10))
+    if len(bucket) == 10 and (now - bucket[0]) < 60:
+        raise HTTPException(status_code=429, detail="Rate limit: 10 requests/minute")
+    bucket.append(now)
 
 
 async def _build_initial_state(user_id: str, message: str, db: AsyncSession) -> dict:
@@ -99,6 +112,7 @@ async def chat_stream(body: ChatRequest, db: AsyncSession = Depends(get_db)):
     Emits progress events as each agent node completes,
     then streams the final response token-by-token.
     """
+    _enforce_rate_limit(body.user_id)
     res = await db.execute(select(User).where(User.id == body.user_id))
     if not res.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="User not found")
