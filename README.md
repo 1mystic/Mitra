@@ -1,6 +1,10 @@
-# Mitra — Career Intelligence OS
+# Mitra: Career Intelligence OS
 
-A production-grade multi-agent AI system that helps ML/AI students find internships, identify skill gaps, build learning roadmaps, and track applications — purpose-built for the Indian ML/AI job market.
+A production-grade multi-agent AI system for ML/AI students. Finds internships, maps skill gaps, builds roadmaps, coaches interviews, and tracks applications — purpose-built for the Indian ML/AI job market.
+
+**Stack:** FastAPI · LangGraph · pgvector · Claude Sonnet 4.6 · Next.js 14 · TypeScript
+
+---
 
 ## Architecture
 
@@ -8,80 +12,112 @@ A production-grade multi-agent AI system that helps ML/AI students find internsh
 User message
      │
      ▼
-FastAPI (SSE streaming)
+FastAPI  (SSE streaming)
      │
      ▼
-LangGraph Multi-Agent Graph
-     ├─ Memory Retriever      → pgvector semantic search over episodic memory
-     ├─ Intent Router         → Qwen2.5-3B (local) OR Claude — classifies into 7 intents
+LangGraph  Multi-Agent StateGraph
      │
-     ├─ opportunity_hunter    → semantic search over curated opportunities
-     ├─ resume_analyzer       → Claude extracts structured skill profile from PDF
-     ├─ gap_detector          → reciprocal skill matching + priority estimation
-     ├─ roadmap_planner       → optimised learning plan with real resources
-     ├─ application_tracker   → CRUD + auto-extraction from natural language
-     ├─ interview_coach       → role-specific questions + answer evaluation
+     ├─ memory_retriever      pgvector semantic search over episodic memory
+     ├─ intent_router         Qwen2.5-3B (QLoRA) or Claude: classifies 7 intents
      │
-     └─ Responder             → synthesis node, generates final response
+     ├─ opportunity_hunter    cosine similarity over curated ML/AI listings
+     ├─ resume_analyzer       Claude extracts structured skill profile from PDF
+     ├─ gap_detector          reciprocal skill matching + priority scoring
+     ├─ roadmap_planner       time-boxed learning plan with real resources
+     ├─ application_tracker   CRUD + natural-language status updates
+     ├─ interview_coach       role-aware questions + answer evaluation
+     │
+     └─ responder             synthesis node, generates final streamed response
      │
      ▼
-PostgreSQL + pgvector (Neon)
+PostgreSQL + pgvector  (Neon)
 ```
+
+**Key constraint:** `build_graph(db)` is called per request so each agent node gets a bound `AsyncSession` — no shared state across concurrent requests.
+
+---
+
+## Frontend
+
+Next.js 14 App Router · TypeScript · CSS Modules
+
+```
+frontend/src/app/
+├── page.tsx              Landing page (bento grid, stats bar, CTA)
+├── chat/                 Multi-agent chat with SSE streaming + sidebar history
+├── opportunities/        Semantic internship search with skill-gap deep links
+├── tracker/              Kanban application pipeline (5 status columns)
+├── profile/              Skill radar + resume upload
+├── onboarding/           PDF dropzone + processing stages
+├── auth/                 Sign in / Register
+├── about/                Project overview, agent docs, tech stack
+└── components/
+    ├── Nav.tsx           Transparent scrolling nav (landing) / fixed (inner pages)
+    └── Footer.tsx        Landing-only footer with project links
+```
+
+**Design system:** obsidian dark backgrounds (`#07080B`), kinetic mint/sky/iris palette, Plus Jakarta Sans headers, JetBrains Mono labels, glass surfaces with `backdrop-filter: blur`, ambient radial glows, bento grid layouts.
+
+---
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
 | Backend | FastAPI, Python 3.12 |
-| Agents | LangGraph 0.2 |
-| LLM | Anthropic Claude (claude-sonnet-4-6) |
-| Intent routing (optional) | Qwen2.5-3B-Instruct (QLoRA fine-tuned, local) |
-| Embeddings | sentence-transformers (all-MiniLM-L6-v2) |
+| Agent orchestration | LangGraph 0.2 |
+| LLM | Claude Sonnet 4.6 (`claude-sonnet-4-6`) |
+| Intent routing (optional) | Qwen2.5-3B-Instruct, QLoRA fine-tuned |
+| Embeddings | sentence-transformers (`all-MiniLM-L6-v2`) |
 | Database | PostgreSQL + pgvector (Neon) |
 | ORM | SQLAlchemy 2.0 async + psycopg3 |
-| PDF Parsing | pdfplumber |
-| Fine-tuning | QLoRA via PEFT + TRL, Qwen2.5-3B |
+| PDF parsing | pdfplumber |
+| ML fine-tuning | QLoRA via PEFT + TRL |
+| Frontend | Next.js 14, TypeScript, CSS Modules |
 | Deployment | Fly.io (backend) + Vercel (frontend) |
 
 ---
 
 ## Quick Start
 
-### 1. Database — Neon (free tier)
+### 1. Database
 
-1. [neon.tech](https://neon.tech) → New Project → copy the **Connection String** (psycopg format)
-2. pgvector is enabled automatically on Neon — nothing else needed
+Create a free project at [neon.tech](https://neon.tech) and copy the psycopg connection string. pgvector is pre-enabled on Neon — nothing else required.
 
 ### 2. Backend
 
 ```bash
 cd backend
 
-# Create and activate virtualenv
 python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 
 pip install -r requirements.txt
 
-cp .env.example .env
-# Fill in DATABASE_URL and ANTHROPIC_API_KEY
-```
+cp .env.example .env             # fill DATABASE_URL + ANTHROPIC_API_KEY
 
-### 3. Run
-
-```bash
 uvicorn app.main:app --reload --port 8000
 ```
 
-Tables are created automatically on first startup. Visit `http://localhost:8000/docs` for the Swagger UI.
+Tables are created automatically on startup. Swagger UI: `http://localhost:8000/docs`
 
-### 4. Seed opportunity data (run once)
+### 3. Seed opportunity data
 
 ```bash
 python -m db.seed_opportunities
 ```
 
-Seeds 20 realistic Indian ML/AI internship opportunities with embeddings.
+Seeds 50+ curated Indian ML/AI internship listings with pgvector embeddings.
+
+### 4. Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev                      # http://localhost:3000
+```
+
+Backend base URL defaults to `http://localhost:8000`. Auth token stored in `localStorage` under `mitra_token`.
 
 ---
 
@@ -91,12 +127,12 @@ Seeds 20 realistic Indian ML/AI internship opportunities with embeddings.
 |---|---|---|
 | `DATABASE_URL` | Yes | psycopg3-format PostgreSQL URL |
 | `ANTHROPIC_API_KEY` | Yes | Anthropic API key |
-| `LANGSMITH_API_KEY` | No | LangSmith tracing |
-| `LANGSMITH_TRACING` | No | `true` to enable tracing |
 | `CLAUDE_MODEL` | No | defaults to `claude-sonnet-4-6` |
 | `EMBEDDING_MODEL` | No | defaults to `all-MiniLM-L6-v2` |
 | `USE_LOCAL_CLASSIFIER` | No | `true` to use fine-tuned Qwen for intent routing |
 | `LOCAL_CLASSIFIER_PATH` | No | Absolute path to the LoRA adapter directory |
+| `LANGSMITH_API_KEY` | No | LangSmith tracing |
+| `LANGSMITH_TRACING` | No | `true` to enable |
 
 ---
 
@@ -106,7 +142,7 @@ Seeds 20 realistic Indian ML/AI internship opportunities with embeddings.
 ```
 POST   /api/users              Create user
 GET    /api/users/{id}         Get user
-PATCH  /api/users/{id}         Update goal/name
+PATCH  /api/users/{id}         Update goal / name
 ```
 
 ### Profile
@@ -115,13 +151,12 @@ POST   /api/profile/upload     Upload resume (PDF or plain text)
 GET    /api/profile/{user_id}  Get extracted skill profile
 ```
 
-### Chat (multi-agent)
+### Chat
 ```
 POST   /api/chat               Full JSON response
 POST   /api/chat/stream        Server-Sent Events stream
 ```
 
-#### Example
 ```json
 POST /api/chat
 {
@@ -130,109 +165,93 @@ POST /api/chat
 }
 ```
 
-#### SSE stream events
+SSE stream events:
 ```
 data: {"type": "progress", "node": "opportunity_hunter"}
-data: {"type": "progress", "node": "gap_detector"}
-data: {"type": "progress", "node": "roadmap_planner"}
-data: {"type": "token", "chunk": "Based on your profile..."}
+data: {"type": "token",    "chunk": "Based on your profile..."}
 data: {"type": "done"}
 ```
 
 ### Opportunities
 ```
-GET    /api/opportunities              List all (filter: ?type=internship)
-POST   /api/opportunities/search       Semantic search by query string
-POST   /api/opportunities              Add new opportunity
+GET    /api/opportunities             List all  (filter: ?type=internship)
+POST   /api/opportunities/search      Semantic search by query
+POST   /api/opportunities             Add listing
 ```
 
-### Application Tracker
+### Tracker
 ```
-GET    /api/tracker/{user_id}          List all applications
-POST   /api/tracker?user_id=...        Add application
-PATCH  /api/tracker/{app_id}           Update status / notes
-DELETE /api/tracker/{app_id}           Delete
+GET    /api/tracker/{user_id}         List all applications
+POST   /api/tracker?user_id=...       Add application
+PATCH  /api/tracker/{app_id}          Update status / notes
+DELETE /api/tracker/{app_id}          Delete
 ```
 
 ---
 
 ## ML Fine-tuning Pipeline
 
-The `ml/` directory contains a knowledge distillation pipeline: Claude acts as teacher model to generate training data; a small Qwen2.5-3B model is fine-tuned via QLoRA to handle intent classification cheaply at inference time.
-
-### Pipeline overview
+Knowledge distillation: Claude acts as teacher to generate labeled training data; Qwen2.5-3B is fine-tuned via QLoRA to handle intent classification cheaply at inference time.
 
 ```
-Claude (teacher)
+Claude  (teacher)
     │  generates 500 labeled career queries
     ▼
 ml/data/training_pairs.jsonl
-    │  QLoRA fine-tuning on Colab T4 (free)
+    │  QLoRA fine-tuning on Colab T4 (free, ~25 min)
     ▼
-ml/checkpoints/intent-classifier/final/  ← LoRA adapter (~30 MB)
-    │  loaded by distill_intent.py
+ml/checkpoints/intent-classifier/final/    LoRA adapter (~30 MB)
+    │
     ▼
-classify_intent() in llm_client.py        ← replaces Claude API call for routing
+classify_intent() in llm_client.py         replaces Claude API call for routing
 ```
 
-### Step 1 — Generate training data
-
-Requires `ANTHROPIC_API_KEY` in `backend/.env`.
+### Step 1: Generate training data
 
 ```bash
-cd mitra
-
-# Intent classification data (default) — 500 career queries × 7 intents
+# 500 career queries x 7 intents
 python ml/generate_synthetic_data.py
 
-# Rich skill-gap analysis data (separate use case)
+# Skill-gap analysis dataset (separate use case)
 python ml/generate_synthetic_data.py --mode skillgap
 ```
 
 Output: `ml/data/training_pairs.jsonl`
-Format: `{"input": "<user query>", "output": "<intent_label>", "intent": "<intent_label>"}`
 
-### Step 2 — Fine-tune on Colab T4
-
-Open a Colab notebook, paste and run:
+### Step 2: Fine-tune on Colab T4
 
 ```python
-# Cell 1 — install
+# install
 !pip install -q "transformers>=4.45" "peft>=0.13" "trl>=0.12" \
     "bitsandbytes>=0.43" "datasets>=2.19" "accelerate>=0.34"
 
-# Cell 2 — upload training_pairs.jsonl to Colab Files, then run
-# (copy contents of ml/train_skill_gap_classifier.py)
+# upload training_pairs.jsonl, then run ml/train_skill_gap_classifier.py
 ```
 
-Training takes ~25 min on T4. The adapter is saved to `OUTPUT_DIR/final/` (~30 MB).
-
-### Step 3 — Enable in the backend
+### Step 3: Enable in backend
 
 ```bash
-# Download the adapter from Colab output panel, then set in backend/.env:
+# backend/.env
 USE_LOCAL_CLASSIFIER=true
 LOCAL_CLASSIFIER_PATH=/absolute/path/to/intent-classifier/final
 ```
 
-`classify_intent()` in `llm_client.py` will now use the local model instead of Claude for routing, saving ~1 API call per message.
-
-### Standalone classifier
+### Standalone inference
 
 ```bash
 python ml/distill_intent.py "Find me ML internships in Bangalore"
-# → [opportunities  ]  Find me ML internships in Bangalore
+# → [opportunities]  Find me ML internships in Bangalore
 
 python ml/distill_intent.py --batch < queries.txt
 ```
 
-### Key ML talking points (for interviews)
+### ML talking points
 
-- Knowledge distillation: Claude (3.5 Sonnet) → Qwen2.5-3B via synthetic data
-- QLoRA: 4-bit NF4 quantisation + rank-16 LoRA = fine-tune 3B model on 15 GB T4 VRAM
-- Paged AdamW 8-bit: further reduces optimizer VRAM by ~300 MB
-- Intent classification replaces a full Claude API call — ~10× cheaper at scale
-- Thread-pool executor pattern: sync model inference called from async FastAPI without blocking
+- Knowledge distillation: Claude Sonnet → Qwen2.5-3B via synthetic data generation
+- QLoRA: 4-bit NF4 quantisation + rank-16 LoRA, fine-tunes 3B model on 15 GB T4 VRAM
+- Paged AdamW 8-bit: reduces optimizer VRAM by ~300 MB
+- Intent classification replaces one Claude API call per message, ~10x cheaper at scale
+- Thread-pool executor: sync model inference called from async FastAPI without blocking the event loop
 
 ---
 
@@ -243,11 +262,11 @@ mitra/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py                    FastAPI entry point
-│   │   ├── config.py                  pydantic-settings (reads .env)
+│   │   ├── config.py                  pydantic-settings (.env)
 │   │   ├── database.py                async SQLAlchemy + pgvector init
 │   │   ├── agents/
-│   │   │   ├── state.py               LangGraph AgentState TypedDict
-│   │   │   ├── graph.py               StateGraph orchestration
+│   │   │   ├── state.py               AgentState TypedDict
+│   │   │   ├── graph.py               LangGraph StateGraph wiring
 │   │   │   ├── opportunity_hunter.py
 │   │   │   ├── resume_analyzer.py
 │   │   │   ├── gap_detector.py
@@ -261,22 +280,33 @@ mitra/
 │   │   │   ├── tracker.py             application CRUD
 │   │   │   └── users.py
 │   │   └── services/
-│   │       ├── llm_client.py          Anthropic SDK wrapper + local classifier toggle
+│   │       ├── llm_client.py          Anthropic SDK + local classifier toggle
 │   │       ├── embedding_service.py   sentence-transformers singleton
 │   │       ├── memory_service.py      pgvector episodic memory
 │   │       └── skill_graph.py         skill extraction + matching
 │   ├── db/
-│   │   └── seed_opportunities.py      20 curated ML/AI opportunities
+│   │   └── seed_opportunities.py      curated ML/AI opportunity listings
 │   └── requirements.txt
+├── frontend/
+│   ├── src/app/
+│   │   ├── page.tsx                   Landing page
+│   │   ├── chat/                      SSE chat UI
+│   │   ├── opportunities/             Internship search
+│   │   ├── tracker/                   Kanban pipeline
+│   │   ├── profile/                   Skill profile
+│   │   ├── onboarding/                Resume upload flow
+│   │   ├── auth/                      Authentication
+│   │   ├── about/                     Project docs page
+│   │   └── components/                Nav, Footer
+│   ├── src/lib/                       API client, auth helpers, types
+│   └── src/app/globals.css            Design system tokens
 ├── ml/
-│   ├── generate_synthetic_data.py     Generates training_pairs.jsonl (intent) or skill_gap_dataset.jsonl
-│   ├── train_skill_gap_classifier.py  QLoRA fine-tuning (run on Colab T4)
-│   ├── train_kaggle.py                Unsloth-optimised variant for Kaggle T4×2
-│   ├── distill_intent.py              Inference module — loads adapter, classifies intent
-│   └── requirements.txt
+│   ├── generate_synthetic_data.py     Training data generation
+│   ├── train_skill_gap_classifier.py  QLoRA fine-tuning (Colab T4)
+│   ├── train_kaggle.py                Unsloth variant for Kaggle T4x2
+│   └── distill_intent.py             Inference: load adapter, classify
 ├── SRS.md
 ├── CLAUDE.md
-├── USERGUIDE.md
 └── README.md
 ```
 
@@ -284,7 +314,7 @@ mitra/
 
 ## Deployment
 
-### Backend → Fly.io
+### Backend: Fly.io
 
 ```bash
 curl -L https://fly.io/install.sh | sh
@@ -298,10 +328,10 @@ fly secrets set DATABASE_URL=postgresql+psycopg://...
 fly deploy
 ```
 
-`fly.toml` (create in `backend/`):
+`fly.toml`:
 ```toml
 app = "mitra-backend"
-primary_region = "sin"   # Singapore — lowest latency from India
+primary_region = "sin"
 
 [build]
   dockerfile = "Dockerfile"
@@ -318,7 +348,7 @@ primary_region = "sin"   # Singapore — lowest latency from India
   cpus = 1
 ```
 
-`Dockerfile` (create in `backend/`):
+`Dockerfile`:
 ```dockerfile
 FROM python:3.12-slim
 WORKDIR /app
@@ -328,6 +358,15 @@ COPY . .
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
+### Frontend: Vercel
+
+```bash
+cd frontend
+npx vercel --prod
+```
+
+Set `NEXT_PUBLIC_API_URL` to your Fly.io backend URL in Vercel environment variables.
+
 ---
 
 ## Roadmap
@@ -336,12 +375,14 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 - [x] Episodic memory with pgvector
 - [x] Resume upload + skill extraction
 - [x] Semantic opportunity matching
-- [x] Application tracker with NL updates
+- [x] Application tracker with natural-language updates
 - [x] Interview coach with question generation
 - [x] ML fine-tuning pipeline (QLoRA + knowledge distillation)
-- [x] Local intent classifier with USE_LOCAL_CLASSIFIER toggle
-- [ ] Next.js frontend with real-time SSE chat UI
+- [x] Local intent classifier with toggle
+- [x] Next.js 14 frontend with real-time SSE chat
+- [x] Kinetic design system (obsidian dark, mint/sky/iris palette)
+- [x] Bento grid landing page, kanban tracker, glass UI
 - [ ] LangSmith observability integration
 - [ ] RAGAS evaluation for RAG quality
 - [ ] GitHub profile analysis (extract projects from repos)
-- [ ] Deadline reminders via cron + email notifications
+- [ ] Deadline reminders via cron + email
