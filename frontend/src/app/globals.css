@@ -24,6 +24,7 @@
 
   /* Borders */
   --line:        rgba(255,255,255,0.08);
+  --line-light:  rgba(255,255,255,0.05);
   --line-strong: rgba(255,255,255,0.14);
 
   /* Accent (used sparingly) */
@@ -56,7 +57,8 @@
 
   /* Shadows */
   --shadow-card: 0 1px 3px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
-  --shadow-elevated: 0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06);
+  --shadow-elevated: 0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.08);
+  --shadow-glow-accent: 0 0 24px rgba(79,142,247,0.15);
 
   /* Transitions */
   --t: 150ms ease;
@@ -106,7 +108,7 @@ img,svg { display:block; }
 @keyframes spin     { to { transform:rotate(360deg); } }
 @keyframes blink    { 0%,100% { opacity:1; } 50% { opacity:0; } }
 @keyframes pulse    { 0%,100% { opacity:1; } 50% { opacity:0.35; } }
-@keyframes shimmer  { to { background-position:-200% 0; } }
+@keyframes shimmer  { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 
 /* ── Typography ──────────────────────────────────────────────────────────── */
 
@@ -199,11 +201,13 @@ img,svg { display:block; }
 .card {
   background:var(--bg-card);
   border-radius:var(--r-xl);
+  border: 1px solid var(--line);
   box-shadow:var(--shadow-card);
-  transition:box-shadow var(--t), background var(--t);
+  transition: box-shadow var(--t), background var(--t), border-color var(--t);
 }
 .card:hover {
   background:var(--bg-card-hover);
+  border-color: var(--line-strong);
 }
 
 /* ── Input ────────────────────────────────────────────────────────────────── */

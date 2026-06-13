@@ -68,6 +68,10 @@
 .heroTitle {
   margin: 0;
   max-width: 640px;
+  background: linear-gradient(160deg, #ffffff 20%, rgba(255,255,255,0.62) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .heroSub {
@@ -88,10 +92,11 @@
   align-items: center;
   gap: 0;
   margin-top: 8px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--r-xl);
   overflow: hidden;
   background: var(--bg-card);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.04);
 }
 
 .stat {
@@ -151,7 +156,19 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  position: relative;
+  overflow: hidden;
 }
+.featureCard::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  opacity: 0;
+  transition: opacity var(--t);
+}
+.featureCard:hover::after { opacity: 1; }
 
 .featureIconWrap {
   width: 44px;
